@@ -30,4 +30,5 @@ func (h *Handler) initRouter() {
 		r.Put("/{email}", h.UpdateUser)
 		r.Delete("/{email}", h.DeleteUser)
 	})
+	h.Mux = r
 }
