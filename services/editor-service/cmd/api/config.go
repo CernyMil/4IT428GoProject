@@ -9,7 +9,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-const dotenvPath = ".env"
+const dotenvPath = "../../.env"
 
 var (
 	once sync.Once

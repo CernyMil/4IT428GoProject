@@ -18,7 +18,131 @@ paths:
           description: It's ALIVE (a.k.a. service is up and running)
         "400":
           description: Invalid request
-  "/users": {
-    # TODO;
-  }
-components: {}
+  "/users":
+    post:
+      description: Create a new user
+      operationID: CreateUser
+      summary: Create a new user
+      requestBody:
+        description: User information for user creation
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        "201":
+          description: User created scuccessfully
+          content: 
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Invalid request
+    get:
+      description: Get all users
+      operationId: ListUser
+      summary: List all users
+      responses:
+        "200":
+          description: A list of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        "400":
+          description: Invalid request
+  "/users/{email}":
+    get:
+      description: Get a user
+      operationId: GetUser
+      summary: Gets a specific user by email
+      parameters:
+        - name: email
+          in: path
+          description: Email of the user to get
+          required: true
+          schema:
+            type: string
+            format: email
+      responses:
+        "200":
+          description: User found
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/User"
+        "404":
+          description: User not found
+        "400":
+          description: Invalid request
+    put:
+      description: Update a user
+      operationId: UpdateUser
+      summary: Updates a specific user by email
+      parameters:
+        - name: email
+          in: path
+          description: Email of the user to get
+          required: true
+          schema:
+            type: string
+            format: email
+      requestBody:
+        description: User information for user creation
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        "200":
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: User not found
+        "400":
+          description: Invalid request
+    delete:
+      description: Delete a user
+      operationId: DeleteUser
+      summary: Deletes a specific user by email
+      parameters:
+        - name: email
+          in: path
+          description: Email of the user to get
+          required: true
+          schema:
+            type: string
+            format: email
+      responses:
+        "204":
+          description: User deleted successfully
+        "404":
+          description: User not found
+        "400":
+          description: Invalid request
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        firstname:
+          type: string
+        lastname:
+          type: string
+      required:
+        - email
+        - firstname
+        - lastname
+
