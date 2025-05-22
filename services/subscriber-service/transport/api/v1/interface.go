@@ -3,13 +3,17 @@ package v1
 import (
 	"context"
 
-	svcmodel "user-management-api/service/model"
+	"subscriber-api/pkg/id"
+	svcmodel "subscriber-api/service/model"
 )
 
-type Service interface {
-	CreateUser(ctx context.Context, user svcmodel.User) error
-	ListUsers(ctx context.Context) []svcmodel.User
-	GetUser(ctx context.Context, email string) (svcmodel.User, error)
-	UpdateUser(ctx context.Context, email string, user svcmodel.User) (svcmodel.User, error)
-	DeleteUser(ctx context.Context, email string) error
+type SubscriberService interface {
+	SubscribeToNewsletter(ctx context.Context, subReq svcmodel.SubscribeRequest) error
+	ConfirmSubscription(ctx context.Context, subscription svcmodel.Subscription) (svcmodel.Subscription, error)
+	UnsubscribeFromNewsletter(ctx context.Context, newsletterId id.Newsletter, email string) (string, error)
+	DeleteNewsletter(ctx context.Context, newsletterId id.Newsletter) error
+	SendPublishedPost(ctx context.Context, post svcmodel.Post) (svcmodel.Post, error)
+
+	//SendConfirmationEmail(to, newsletterName, confirmLink string) error
+	//SendNewsletterEmail(to, newsletterName, content, unsubscribeLink string) error
 }

@@ -5,11 +5,11 @@ import "github.com/go-chi/chi"
 type Handler struct {
 	*chi.Mux
 
-	service Service
+	service SubscriberService
 }
 
 func NewHandler(
-	service Service,
+	service SubscriberService,
 ) *Handler {
 	h := &Handler{
 		service: service,
@@ -23,11 +23,15 @@ func (h *Handler) initRouter() {
 
 	// TODO: Setup middleware.
 
-	r.Route("/users", func(r chi.Router) {
-		r.Get("/", h.ListUsers)
-		r.Post("/", h.CreateUser)
-		r.Get("/{email}", h.GetUser)
-		r.Put("/{email}", h.UpdateUser)
-		r.Delete("/{email}", h.DeleteUser)
+	r.Route("newsletters/{newsletterId}", func(r chi.Router) {
+		r.Post("/subscribe", h.SubscribeToNewsletter)
+		r.Delete("/unsubscribe", h.UnsubscribeFromNewsletter)
+		r.Get("/confirm", h.ConfirmSubscription)
+		r.Get("/posts/{postId}/publish", h.SendPublishedPost)
+		r.Delete("/delete", h.DeleteNewsletter)
 	})
+
+	/*r.Route("newsletters/{newsletterId}/posts", func(r chi.Router) {
+		r.Post("/", h.SendEmail)
+	})   */
 }

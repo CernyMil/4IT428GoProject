@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	apiv1 "user-management-api/transport/api/v1"
+	apiv1 "subscriber-api/transport/api/v1"
 
 	"github.com/go-chi/chi"
 	httpx "go.strv.io/net/http"
@@ -20,12 +20,12 @@ var OpenAPI []byte
 type Controller struct {
 	*chi.Mux
 
-	service apiv1.Service
+	service apiv1.SubscriberService
 	version string
 }
 
 func NewController(
-	service apiv1.Service,
+	service apiv1.SubscriberService,
 	version string,
 ) (*Controller, error) {
 	controller := &Controller{
@@ -42,8 +42,6 @@ func (c *Controller) initRouter() {
 	r.Group(func(r chi.Router) {
 		// r.Use(httpx.LoggingMiddleware(util.NewServerLogger("httpx.LoggingMiddleware")))
 		// r.Use(httpx.RecoverMiddleware(util.NewServerLogger("httpx.RecoverMiddleware").WithStackTrace(slog.Level)))
-		// TODO: Add authentication middleware
-		// authenticate := middleware.Authenticate(c.logger, c.tokenParser)
 
 		v1Handler := apiv1.NewHandler(
 			c.service,
