@@ -15,7 +15,7 @@ FROM alpine:latest
 WORKDIR /app
 
 COPY --from=builder /app/editor-service .
-COPY goproject-4c949-firebase-adminsdk-fbsvc-016cd1d40b.json . 
+COPY firebase-cred.json . 
 
 EXPOSE 8081
 
