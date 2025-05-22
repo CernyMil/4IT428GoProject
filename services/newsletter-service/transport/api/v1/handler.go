@@ -1,33 +1,77 @@
 package v1
 
-import "github.com/go-chi/chi"
+import (
+	"encoding/json"
+	"net/http"
 
-type Handler struct {
-	*chi.Mux
+	"your_project_path/service/newsletter"
 
-	service Service
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+)
+
+type NewsletterHandler struct {
+	service newsletter.Service
 }
 
-func NewHandler(
-	service Service,
-) *Handler {
-	h := &Handler{
-		service: service,
-	}
-	h.initRouter()
-	return h
+func NewNewsletterHandler(service newsletter.Service) *NewsletterHandler {
+	return &NewsletterHandler{service: service}
 }
 
-func (h *Handler) initRouter() {
+func (h *NewsletterHandler) Routes() http.Handler {
 	r := chi.NewRouter()
+	r.Use(middleware.Logger)
 
-	// TODO: Setup middleware.
+	r.Post("/newsletters", h.createNewsletter)
+	r.Get("/newsletters", h.listNewsletters)
+	r.Put("/newsletters/{id}", h.updateNewsletter)
 
-	r.Route("/users", func(r chi.Router) {
-		r.Get("/", h.ListUsers)
-		r.Post("/", h.CreateUser)
-		r.Get("/{email}", h.GetUser)
-		r.Put("/{email}", h.UpdateUser)
-		r.Delete("/{email}", h.DeleteUser)
-	})
+	return r
+}
+
+func (h *NewsletterHandler) createNewsletter(w http.ResponseWriter, r *http.Request) {
+	var input newsletter.CreateNewsletterInput
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, "invalid input", http.StatusBadRequest)
+		return
+	}
+
+	n, err := h.service.CreateNewsletter(r.Context(), input)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(n)
+}
+
+func (h *NewsletterHandler) listNewsletters(w http.ResponseWriter, r *http.Request) {
+	ns, err := h.service.ListNewsletters(r.Context())
+	if err != nil {
+		http.Error(w, "failed to fetch newsletters", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(ns)
+}
+
+func (h *NewsletterHandler) updateNewsletter(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	var input newsletter.UpdateNewsletterInput
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, "invalid input", http.StatusBadRequest)
+		return
+	}
+
+	n, err := h.service.UpdateNewsletter(r.Context(), id, input)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(n)
 }
