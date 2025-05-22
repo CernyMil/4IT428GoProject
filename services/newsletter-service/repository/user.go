@@ -3,10 +3,10 @@ package repository
 import (
 	"context"
 
-	"user-management-api/pkg/id"
+	"newsletter-management-api-api/pkg/id"
+	"newsletter-management-api/repository/sql/query"
+	"newsletter-management-api/service/model"
 	dbmodel "user-management-api/repository/sql/model"
-	"user-management-api/repository/sql/query"
-	"user-management-api/service/model"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5"

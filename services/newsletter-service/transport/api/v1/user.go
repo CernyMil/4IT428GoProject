@@ -10,8 +10,8 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-playground/validator/v10"
 
-	"user-management-api/service/model"
-	"user-management-api/transport/util"
+	"newsletter-management-api/service/model"
+	"newsletter-management-api/transport/util"
 )
 
 var validate = validator.New()

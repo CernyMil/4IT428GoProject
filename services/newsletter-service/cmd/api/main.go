@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log/slog"
 
-	"user-management-api/service"
-	"user-management-api/transport/api"
-	"user-management-api/transport/util"
+	"newsletter-management-api/service"
+	"newsletter-management-api/transport/api"
+	"newsletter-management-api/transport/util"
 
 	httpx "go.strv.io/net/http"
 )

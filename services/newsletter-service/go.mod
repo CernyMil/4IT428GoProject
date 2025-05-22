@@ -1,4 +1,4 @@
-module user-management-api
+module newsletter-management-api
 
 go 1.22
 
