@@ -3,18 +3,18 @@ package service
 import (
 	"context"
 	"editor-service/models"
-	"editor-service/pkg/id"
+	uuidutil "editor-service/pkg/id"
 	"editor-service/repository"
-	"editor-service/transport"
+	transport "editor-service/transport/middleware"
 	"time"
 )
 
 type EditorService struct {
-	repo repository.EditorRepository
+	repo repository.EditorRepositoryInterface
 	auth *transport.FirebaseAuth
 }
 
-func NewEditorService(repo repository.EditorRepository, auth *transport.FirebaseAuth) *EditorService {
+func NewEditorService(repo repository.EditorRepositoryInterface, auth *transport.FirebaseAuth) *EditorService {
 	return &EditorService{repo: repo, auth: auth}
 }
 

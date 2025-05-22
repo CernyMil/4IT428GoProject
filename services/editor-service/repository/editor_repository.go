@@ -7,20 +7,20 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type EditorRepository interface {
+type EditorRepositoryInterface interface {
 	CreateEditor(ctx context.Context, editor *models.Editor) error
 	GetEditorByEmail(ctx context.Context, email string) (*models.Editor, error)
 }
 
-type editorRepository struct {
+type EditorRepository struct {
 	db *pgxpool.Pool
 }
 
-func NewEditorRepository(db *pgxpool.Pool) EditorRepository {
-	return &editorRepository{db: db}
+func NewPgxEditorRepository(db *pgxpool.Pool) EditorRepositoryInterface {
+	return &EditorRepository{db: db}
 }
 
-func (r *editorRepository) CreateEditor(ctx context.Context, editor *models.Editor) error {
+func (r *EditorRepository) CreateEditor(ctx context.Context, editor *models.Editor) error {
 	_, err := r.db.Exec(ctx,
 		`INSERT INTO editors (id, email, first_name, last_name, created_at) 
          VALUES ($1, $2, $3, $4, $5)`,
@@ -29,7 +29,7 @@ func (r *editorRepository) CreateEditor(ctx context.Context, editor *models.Edit
 	return err
 }
 
-func (r *editorRepository) GetEditorByEmail(ctx context.Context, email string) (*models.Editor, error) {
+func (r *EditorRepository) GetEditorByEmail(ctx context.Context, email string) (*models.Editor, error) {
 	row := r.db.QueryRow(ctx, `SELECT id, email, first_name, last_name, created_at FROM editors WHERE email=$1`, email)
 
 	var editor models.Editor

@@ -5,12 +5,12 @@ import (
 	"editor-service/repository"
 	"editor-service/service"
 	"editor-service/transport"
+	"editor-service/transport/middleware"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -23,17 +23,17 @@ func main() {
 		log.Fatalf("Failed to connect to DB: %v", err)
 	}
 
-	auth, err := transport.NewFirebaseAuth(firebaseCred)
+	auth, err := middleware.NewFirebaseAuth(firebaseCred)
 	if err != nil {
 		log.Fatalf("Failed to initialize Firebase: %v", err)
 	}
 
-	repo := repository.NewEditorRepository(dbpool)
+	repo := repository.NewPgxEditorRepository(dbpool)
 	svc := service.NewEditorService(repo, auth)
 	handler := transport.NewEditorHandler(svc)
 
 	r := chi.NewRouter()
-	r.Use(middleware.Logger)
+	//r.Use(middleware.Logger)
 
 	r.Post("/signup", handler.SignUp)
 
