@@ -3,13 +3,13 @@ package v1
 import (
 	"context"
 
-	svcmodel "github.com/jackc/pgx/v5/service/model"
+	svcmodel "editor-service/service/model"
 )
 
 type Service interface {
-	CreateUser(ctx context.Context, user svcmodel.User) error
-	ListUsers(ctx context.Context) []svcmodel.User
-	GetUser(ctx context.Context, email string) (svcmodel.User, error)
-	UpdateUser(ctx context.Context, email string, user svcmodel.User) (svcmodel.User, error)
-	DeleteUser(ctx context.Context, email string) error
+	CreateEditor(ctx context.Context, Editor svcmodel.Editor) error
+	ListEditors(ctx context.Context) []svcmodel.Editor
+	GetEditor(ctx context.Context, email string) (svcmodel.Editor, error)
+	UpdateEditor(ctx context.Context, email string, Editor svcmodel.Editor) (svcmodel.Editor, error)
+	DeleteEditor(ctx context.Context, email string) error
 }

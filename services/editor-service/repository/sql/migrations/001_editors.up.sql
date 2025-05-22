@@ -1,5 +1,9 @@
 CREATE TABLE editors (
     id          uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+    Email     string NOT NULL,
+	FirstName string NOT NULL,
+	LastName  string NOT NULL,
+    Password  string NOT NULL,
     created_at  TIMESTAMPTZ  NOT NULL,
     updated_at  TIMESTAMPTZ  NOT NULL
 );

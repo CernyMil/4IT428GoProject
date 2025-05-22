@@ -2,11 +2,9 @@ services:
   nginx:
     image: nginx:latest
     ports:
-      - "80:80"
-    depends_on:
-      - editor-service
+      - "8080:80"
     volumes:
-       - ./services/nginx/nginx.conf:/etc/nginx/nginx.conf
+       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
 
   postgres:
     image: postgres:latest
@@ -20,7 +18,15 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   editor-service:
-    build: ./editor-service
+    build:
+      context: ./editor-service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      PORT: 8081
+      DATABASE_URL: postgres://user:password@postgres:5432/mydb
+      FIREBASE_CRED_PATH: "/app/goproject-4c949-firebase-adminsdk-fbsvc-016cd1d40b.json"
 
 volumes:
-  postgres_data: 
+  postgres_data:

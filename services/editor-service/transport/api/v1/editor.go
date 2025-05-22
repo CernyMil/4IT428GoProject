@@ -2,16 +2,14 @@ package v1
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
-	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/go-playground/validator/v10"
 
-	"github.com/jackc/pgx/v5/service/model"
-	"github.com/jackc/pgx/v5/transport/util"
+	"editor-service/service/model"
+	"editor-service/transport/util"
 )
 
 var validate = validator.New()
@@ -21,79 +19,66 @@ func getEmailFromURL(r *http.Request) string {
 	return email
 }
 
-func ValidateBirthDate(bd model.BirthDate) error {
-	dateStr := fmt.Sprintf("%04d-%02d-%02d", bd.Year, bd.Month, bd.Day)
-	if _, err := time.Parse("2006-01-02", dateStr); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) CreateEditor(w http.ResponseWriter, r *http.Request) {
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
 		util.WriteErrResponse(w, http.StatusBadRequest, err)
 		return
 	}
-	var user model.User
-	if err := json.Unmarshal(b, &user); err != nil {
+	var Editor model.Editor
+	if err := json.Unmarshal(b, &Editor); err != nil {
 		util.WriteErrResponse(w, http.StatusBadRequest, err)
 		return
 	}
-	if err := validate.Struct(user); err != nil {
+	if err := validate.Struct(Editor); err != nil {
 		util.WriteErrResponse(w, http.StatusBadRequest, err)
 		return
 
 	}
 
-	if err := ValidateBirthDate(user.BirthDate); err != nil {
+	if err := h.service.CreateEditor(r.Context(), Editor); err != nil {
 		util.WriteErrResponse(w, http.StatusBadRequest, err)
 		return
 	}
-
-	if err := h.service.CreateUser(r.Context(), user); err != nil {
-		util.WriteErrResponse(w, http.StatusBadRequest, err)
-		return
-	}
-	util.WriteResponse(w, http.StatusCreated, user)
+	util.WriteResponse(w, http.StatusCreated, Editor)
 }
 
-func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
-	user, err := h.service.GetUser(r.Context(), getEmailFromURL(r))
+func (h *Handler) GetEditor(w http.ResponseWriter, r *http.Request) {
+	Editor, err := h.service.GetEditor(r.Context(), getEmailFromURL(r))
 	if err != nil {
 		util.WriteErrResponse(w, http.StatusBadRequest, err)
 		return
 	}
-	util.WriteResponse(w, http.StatusOK, user)
+	util.WriteResponse(w, http.StatusOK, Editor)
 }
 
-func (h *Handler) ListUsers(w http.ResponseWriter, r *http.Request) {
-	users := h.service.ListUsers(r.Context())
-	util.WriteResponse(w, http.StatusOK, users)
+func (h *Handler) ListEditors(w http.ResponseWriter, r *http.Request) {
+	Editors := h.service.ListEditors(r.Context())
+	util.WriteResponse(w, http.StatusOK, Editors)
 }
 
-func (h *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) UpdateEditor(w http.ResponseWriter, r *http.Request) {
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
 		util.WriteErrResponse(w, http.StatusBadRequest, err)
 		return
 	}
-	var user model.User
-	if err := json.Unmarshal(b, &user); err != nil {
+	var Editor model.Editor
+	if err := json.Unmarshal(b, &Editor); err != nil {
 		util.WriteErrResponse(w, http.StatusBadRequest, err)
 		return
 	}
-	email := user.Email
-	userUpdated, err := h.service.UpdateUser(r.Context(), email, user)
+	email := Editor.Email
+	EditorUpdated, err := h.service.UpdateEditor(r.Context(), email, Editor)
 	if err != nil {
 		util.WriteErrResponse(w, http.StatusBadRequest, err)
 		return
 	}
-	util.WriteResponse(w, http.StatusOK, userUpdated)
+	util.WriteResponse(w, http.StatusOK, EditorUpdated)
 }
 
-func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
-	if err := h.service.DeleteUser(r.Context(), getEmailFromURL(r)); err != nil {
+func (h *Handler) DeleteEditor(w http.ResponseWriter, r *http.Request) {
+	if err := h.service.DeleteEditor(r.Context(), getEmailFromURL(r)); err != nil {
 		util.WriteErrResponse(w, http.StatusBadRequest, err)
 		return
 	}

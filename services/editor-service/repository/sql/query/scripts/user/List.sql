@@ -1,7 +1,7 @@
 SELECT
-	u.id,
-	u.created_at,
-	u.updated_at
+	e.id,
+	e.created_at,
+	e.updated_at
 FROM
-	users as u
-ORDER BY u.created_at
+	editors as e
+ORDER BY e.created_at

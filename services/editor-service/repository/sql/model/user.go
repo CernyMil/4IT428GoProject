@@ -8,6 +8,10 @@ import (
 
 type Editor struct {
 	ID        id.Editor `db:"id"`
+	Email     string
+	FirstName string
+	LastName  string
+	Password  string
 	CreatedAt time.Time `db:"created_at"`
 	UpdatedAt time.Time `db:"updated_at"`
 }

@@ -23,12 +23,12 @@ func (h *Handler) initRouter() {
 
 	// TODO: Setup middleware.
 
-	r.Route("/users", func(r chi.Router) {
-		r.Get("/", h.ListUsers)
-		r.Post("/", h.CreateUser)
-		r.Get("/{email}", h.GetUser)
-		r.Put("/{email}", h.UpdateUser)
-		r.Delete("/{email}", h.DeleteUser)
+	r.Route("/Editors", func(r chi.Router) {
+		r.Get("/", h.ListEditors)
+		r.Post("/", h.CreateEditor)
+		r.Get("/{email}", h.GetEditor)
+		r.Put("/{email}", h.UpdateEditor)
+		r.Delete("/{email}", h.DeleteEditor)
 	})
 	h.Mux = r
 }
