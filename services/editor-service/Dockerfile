@@ -11,6 +11,7 @@ RUN go mod download
 COPY . .
 
 # Sestav binárku
+RUN go mod tidy
 RUN go build -o editor-service ./cmd/api
 
 # Použij malý image pro běh aplikace
@@ -19,7 +20,7 @@ FROM alpine:latest
 WORKDIR /app
 
 # Zkopíruj binárku z builderu
-COPY --from=builder /app/editor-service .
+COPY --from=builder /app/editor-service ./cmd/api
 
 # Nastav port (případně uprav dle potřeby)
 EXPOSE 8081
