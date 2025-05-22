@@ -1,2 +1,5 @@
+services/.env
+
 services/editor-service/goproject-4c949-firebase-adminsdk-fbsvc-016cd1d40b.json
 services/editor-service/firebase-cred.json
+services/subscriber-service/goproject-4c949-firebase-adminsdk-fbsvc-564d6d7e63.json
