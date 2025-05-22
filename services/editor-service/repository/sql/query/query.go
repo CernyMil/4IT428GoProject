@@ -5,8 +5,8 @@ import (
 )
 
 var (
-	//go:embed scripts/user/Read.sql
-	ReadUser string
-	//go:embed scripts/user/List.sql
-	ListUser string
+	//go:embed scripts/editor/Read.sql
+	ReadEditor string
+	//go:embed scripts/editor/List.sql
+	ListEditor string
 )

@@ -1,16 +1,8 @@
 package model
 
-import "time"
-
-type User struct {
+type Editor struct {
 	Email     string
 	FirstName string
 	LastName  string
-	BirthDate BirthDate
-}
-
-type BirthDate struct {
-	Day   int
-	Month time.Month
-	Year  int
+	Nickname  string
 }

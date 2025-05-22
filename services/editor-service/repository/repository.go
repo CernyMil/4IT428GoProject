@@ -3,11 +3,11 @@ package repository
 import "github.com/jackc/pgx/v5/pgxpool"
 
 type Repository struct {
-	*UserRepository
+	*EditorRepository
 }
 
 func New(pool *pgxpool.Pool) (*Repository, error) {
 	return &Repository{
-		UserRepository: NewUserRepository(pool),
+		EditorRepository: NewEditorRepository(pool),
 	}, nil
 }

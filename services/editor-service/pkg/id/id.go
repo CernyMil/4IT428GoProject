@@ -6,32 +6,32 @@ import (
 	"github.com/google/uuid"
 )
 
-type User uuid.UUID
+type Editor uuid.UUID
 
-func (u *User) FromString(s string) error {
+func (u *Editor) FromString(s string) error {
 	id, err := uuid.Parse(s)
 	if err != nil {
 		return err
 	}
 
-	*u = User(id)
+	*u = Editor(id)
 	return nil
 }
 
-func (u User) String() string {
+func (u Editor) String() string {
 	return uuid.UUID(u).String()
 }
 
-func (u *User) Scan(data any) error {
-	return scanUUID((*uuid.UUID)(u), "User", data)
+func (u *Editor) Scan(data any) error {
+	return scanUUID((*uuid.UUID)(u), "Editor", data)
 }
 
-func (u User) MarshalText() ([]byte, error) {
+func (u Editor) MarshalText() ([]byte, error) {
 	return []byte(uuid.UUID(u).String()), nil
 }
 
-func (u *User) UnmarshalText(data []byte) error {
-	return unmarshalUUID((*uuid.UUID)(u), "User", data)
+func (u *Editor) UnmarshalText(data []byte) error {
+	return unmarshalUUID((*uuid.UUID)(u), "Editor", data)
 }
 
 func scanUUID(u *uuid.UUID, idTypeName string, data any) error {

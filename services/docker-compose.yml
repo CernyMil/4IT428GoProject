@@ -1,0 +1,26 @@
+services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    depends_on:
+      - editor-service
+    volumes:
+       - ./services/nginx/nginx.conf:/etc/nginx/nginx.conf
+
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  editor-service:
+    build: ./editor-service
+
+volumes:
+  postgres_data: 

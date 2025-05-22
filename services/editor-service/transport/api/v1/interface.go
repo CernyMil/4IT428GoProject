@@ -3,7 +3,7 @@ package v1
 import (
 	"context"
 
-	svcmodel "user-management-api/service/model"
+	svcmodel "github.com/jackc/pgx/v5/service/model"
 )
 
 type Service interface {

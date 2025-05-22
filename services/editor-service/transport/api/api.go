@@ -5,7 +5,9 @@ import (
 	"log/slog"
 	"net/http"
 
-	apiv1 "user-management-api/transport/api/v1"
+	apiv1 "github.com/jackc/pgx/v5/transport/api/v1"
+
+	"editor-service/transport/middleware"
 
 	"github.com/go-chi/chi"
 	httpx "go.strv.io/net/http"
@@ -38,6 +40,11 @@ func NewController(
 
 func (c *Controller) initRouter() {
 	r := chi.NewRouter()
+
+	// Typicky načtěte cestu k JSON credentials z configu nebo env:
+	const firebaseCredPath = "services\editor-service\goproject-4c949-firebase-adminsdk-fbsvc-016cd1d40b.json"
+
+	r.Use(middleware.FirebaseAuthMiddleware(firebaseCredPath)) 
 
 	r.Group(func(r chi.Router) {
 		// r.Use(httpx.LoggingMiddleware(util.NewServerLogger("httpx.LoggingMiddleware")))

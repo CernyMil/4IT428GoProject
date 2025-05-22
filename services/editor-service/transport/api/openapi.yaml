@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
-  title: User management service
-  description: User management service allowing to manage users.
+  title: editor management service
+  description: editor management service allowing to manage editors.
   version: 0.0.0
 servers:
   - url: http://localhost
@@ -18,120 +18,120 @@ paths:
           description: It's ALIVE (a.k.a. service is up and running)
         "400":
           description: Invalid request
-  "/users":
+  "/editors":
     post:
-      description: Create a new user
-      operationID: CreateUser
-      summary: Create a new user
+      description: Create a new editor
+      operationID: Createeditor
+      summary: Create a new editor
       requestBody:
-        description: User information for user creation
+        description: editor information for editor creation
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/User"
+              $ref: "#/components/schemas/editor"
       responses:
         "201":
-          description: User created scuccessfully
+          description: editor created scuccessfully
           content: 
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
+                $ref: "#/components/schemas/editor"
         "400":
           description: Invalid request
     get:
-      description: Get all users
-      operationId: ListUser
-      summary: List all users
+      description: Get all editors
+      operationId: Listeditor
+      summary: List all editors
       responses:
         "200":
-          description: A list of users
+          description: A list of editors
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/User"
+                  $ref: "#/components/schemas/editor"
         "400":
           description: Invalid request
-  "/users/{email}":
+  "/editors/{email}":
     get:
-      description: Get a user
-      operationId: GetUser
-      summary: Gets a specific user by email
+      description: Get a editor
+      operationId: Geteditor
+      summary: Gets a specific editor by email
       parameters:
         - name: email
           in: path
-          description: Email of the user to get
+          description: Email of the editor to get
           required: true
           schema:
             type: string
             format: email
       responses:
         "200":
-          description: User found
+          description: editor found
           content:
             application/json:
               schema:
                 type: object
                 items:
-                  $ref: "#/components/schemas/User"
+                  $ref: "#/components/schemas/editor"
         "404":
-          description: User not found
+          description: editor not found
         "400":
           description: Invalid request
     put:
-      description: Update a user
-      operationId: UpdateUser
-      summary: Updates a specific user by email
+      description: Update a editor
+      operationId: Updateeditor
+      summary: Updates a specific editor by email
       parameters:
         - name: email
           in: path
-          description: Email of the user to get
+          description: Email of the editor to get
           required: true
           schema:
             type: string
             format: email
       requestBody:
-        description: User information for user creation
+        description: editor information for editor creation
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/User"
+              $ref: "#/components/schemas/editor"
       responses:
         "200":
-          description: User updated successfully
+          description: editor updated successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
+                $ref: "#/components/schemas/editor"
         "404":
-          description: User not found
+          description: editor not found
         "400":
           description: Invalid request
     delete:
-      description: Delete a user
-      operationId: DeleteUser
-      summary: Deletes a specific user by email
+      description: Delete a editor
+      operationId: Deleteeditor
+      summary: Deletes a specific editor by email
       parameters:
         - name: email
           in: path
-          description: Email of the user to get
+          description: Email of the editor to get
           required: true
           schema:
             type: string
             format: email
       responses:
         "204":
-          description: User deleted successfully
+          description: editor deleted successfully
         "404":
-          description: User not found
+          description: editor not found
         "400":
           description: Invalid request
 components:
   schemas:
-    User:
+    editor:
       type: object
       properties:
         email:
