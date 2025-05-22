@@ -2,73 +2,37 @@ package service
 
 import (
 	"context"
-
-	"editor-service/service/errors"
-	"editor-service/service/model"
+	"editor-service/models"
+	"editor-service/pkg/id"
+	"editor-service/repository"
+	"editor-service/transport"
+	"time"
 )
 
-var (
-	Editors = map[string]model.Editor{}
-)
-
-// CreateEditor saves Editor in map under email as a key.
-func (Service) CreateEditor(_ context.Context, Editor model.Editor) error {
-	if _, exists := Editors[Editor.Email]; exists {
-		return errors.ErrEditorAlreadyExists
-	}
-
-	Editors[Editor.Email] = Editor
-
-	return nil
+type EditorService struct {
+	repo repository.EditorRepository
+	auth *transport.FirebaseAuth
 }
 
-// ListEditors returns list of Editors in array of Editors.
-func (Service) ListEditors(_ context.Context) []model.Editor {
-	EditorsList := make([]model.Editor, 0, len(Editors))
-	for _, Editor := range Editors {
-		EditorsList = append(EditorsList, Editor)
-	}
-
-	return EditorsList
+func NewEditorService(repo repository.EditorRepository, auth *transport.FirebaseAuth) *EditorService {
+	return &EditorService{repo: repo, auth: auth}
 }
 
-// GetEditor returns an Editor with specified email.
-func (Service) GetEditor(_ context.Context, email string) (model.Editor, error) {
-	Editor, exists := Editors[email]
-
-	if !exists {
-		return model.Editor{}, errors.ErrEditorDoesntExists
+func (s *EditorService) SignUp(ctx context.Context, idToken, firstName, lastName string) error {
+	token, err := s.auth.VerifyIDToken(ctx, idToken)
+	if err != nil {
+		return err
 	}
 
-	return Editor, nil
-}
+	email := token.Claims["email"].(string)
 
-// UpdateEditor updates attributes of a specified Editor.
-func (Service) UpdateEditor(_ context.Context, email string, Editor model.Editor) (model.Editor, error) {
-	oldEditor, exists := Editors[email]
-
-	if !exists {
-		return model.Editor{}, errors.ErrEditorDoesntExists
+	editor := &models.Editor{
+		ID:        uuidutil.NewUUID(),
+		Email:     email,
+		FirstName: firstName,
+		LastName:  lastName,
+		CreatedAt: time.Now(),
 	}
 
-	if oldEditor.Email == Editor.Email {
-		Editors[email] = Editor
-	} else {
-		Editors[Editor.Email] = Editor
-
-		delete(Editors, email)
-	}
-
-	return Editor, nil
-}
-
-// DeleteEditor deletes Editor from memory.
-func (Service) DeleteEditor(_ context.Context, email string) error {
-	if _, exists := Editors[email]; !exists {
-		return errors.ErrEditorDoesntExists
-	}
-
-	delete(Editors, email)
-
-	return nil
+	return s.repo.CreateEditor(ctx, editor)
 }

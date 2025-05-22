@@ -2,70 +2,41 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"log/slog"
-
+	"editor-service/repository"
 	"editor-service/service"
-	"editor-service/transport/api"
-	"editor-service/transport/util"
+	"editor-service/transport"
+	"log"
+	"net/http"
+	"os"
 
-	httpx "go.strv.io/net/http"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-var version = "v0.0.0"
-
 func main() {
-	ctx := context.Background()
-	cfg := MustLoadConfig()
-	util.SetServerLogLevel(slog.LevelInfo)
+	dbURL := os.Getenv("DATABASE_URL")
+	firebaseCred := os.Getenv("FIREBASE_CRED")
 
-	controller, err := setupController(
-		cfg,
-	)
+	dbpool, err := pgxpool.New(context.Background(), dbURL)
 	if err != nil {
-		slog.Error("initializing controller", slog.Any("error", err))
+		log.Fatalf("Failed to connect to DB: %v", err)
 	}
 
-	addr := fmt.Sprintf(":%d", cfg.Port)
-	// Initialize the server config.
-	serverConfig := httpx.ServerConfig{
-		Addr:    addr,
-		Handler: controller,
-		Hooks:   httpx.ServerHooks{
-			// BeforeShutdown: []httpx.ServerHookFunc{
-			// 	func(_ context.Context) {
-			// 		database.Close()
-			// 	},
-			// },
-		},
-		Limits: nil,
-		Logger: util.NewServerLogger("httpx.Server"),
-	}
-	server := httpx.NewServer(&serverConfig)
-
-	slog.Info("starting server", slog.Int("port", cfg.Port))
-	if err := server.Run(ctx); err != nil {
-		slog.Error("server failed", slog.Any("error", err))
-	}
-}
-
-func setupController(
-	_ Config,
-) (*api.Controller, error) {
-	// Initialize the service.
-	svc, err := service.NewService()
+	auth, err := transport.NewFirebaseAuth(firebaseCred)
 	if err != nil {
-		return nil, fmt.Errorf("initializing user service: %w", err)
+		log.Fatalf("Failed to initialize Firebase: %v", err)
 	}
 
-	// Initialize the controller.
-	controller, err := api.NewController(
-		svc,
-		version,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("initializing controller: %w", err)
-	}
+	repo := repository.NewEditorRepository(dbpool)
+	svc := service.NewEditorService(repo, auth)
+	handler := transport.NewEditorHandler(svc)
 
-	return controller, nil
+	r := chi.NewRouter()
+	r.Use(middleware.Logger)
+
+	r.Post("/signup", handler.SignUp)
+
+	log.Println("Server running on :8080")
+	http.ListenAndServe(":8080", r)
 }
