@@ -18,8 +18,7 @@ var (
 )
 
 type Config struct {
-	Port      int    `env:"PORT" validate:"required"`
-	ProjectID string `env:"FIREBASE_PROJECT_ID" validate:"required"`
+	Port int `env:"PORT" validate:"required"`
 }
 
 func LoadConfig() (Config, error) {
