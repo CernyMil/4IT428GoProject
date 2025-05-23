@@ -24,7 +24,7 @@ func main() {
 	cfg := MustLoadConfig()
 	util.SetServerLogLevel(slog.LevelInfo)
 
-	firestoreClient, err := initializeFirebase()
+	firestoreClient, err := initializeFirebase(cfg)
 	if err != nil {
 		log.Fatalf("Failed to connect to the firestore: %v", err)
 	}
@@ -66,10 +66,11 @@ func main() {
 	}
 }
 
-func initializeFirebase() (*firestore.Client, error) {
+func initializeFirebase(cfg Config) (*firestore.Client, error) {
 	// Use a service account
+
 	ctx := context.Background()
-	sa := option.WithCredentialsFile("../../goproject-4c949-firebase-adminsdk-fbsvc-564d6d7e63.json")
+	sa := option.WithCredentialsFile(cfg.ServiceAccount)
 	app, err := firebase.NewApp(ctx, nil, sa)
 	if err != nil {
 		return nil, err

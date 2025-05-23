@@ -8,15 +8,14 @@ RUN go mod download
 COPY . .
 
 RUN go mod tidy
-RUN go build -o /app/subscriber-service .
-
-RUN CGO_ENABLED=0 GOOS=linux go build -o /app/subscriber-service/main/api ./cmd/main.go
+RUN go build -o subscriber-service ./cmd/api
 
 FROM alpine:latest
 
 WORKDIR /app
 
-COPY --from=builder /app/subscriber-api .
+COPY --from=builder /app/subscriber-service .
+COPY goproject-4c949-firebase-adminsdk-fbsvc-564d6d7e63.json . 
 
 EXPOSE 8083
 
