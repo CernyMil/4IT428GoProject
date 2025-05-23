@@ -9,7 +9,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-const dotenvPath = "../../../.env"
+const dotenvPath = "../../.env"
 
 var (
 	once sync.Once
@@ -18,7 +18,8 @@ var (
 )
 
 type Config struct {
-	Port int `env:"PORT" validate:"required"`
+	Port           int    `env:"PORT" validate:"required"`
+	ServiceAccount string `env:"SERVICE_ACCOUNT" validate:"required"`
 }
 
 func LoadConfig() (Config, error) {

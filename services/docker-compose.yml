@@ -26,7 +26,17 @@ services:
     environment:
       PORT: 8081
       DATABASE_URL: postgres://user:password@postgres:5432/mydb
-      FIREBASE_CRED_PATH: "/app/firebase-cred.json"
+      FIREBASE_CRED: "/app/firebase-cred.json"
+  
+  subscriber-service:
+    build:
+      context: ./subscriber-service
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    environment:
+      PORT: 8083
+      SERVICE_ACCOUNT: "/app/goproject-4c949-firebase-adminsdk-fbsvc-564d6d7e63.json"
 
 volumes:
   postgres_data:
