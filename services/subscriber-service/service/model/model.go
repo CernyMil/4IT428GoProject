@@ -8,13 +8,8 @@ import (
 type Subscription struct {
 	ID           id.Subscription `json:"id" validate:"required"`
 	NewsletterID id.Newsletter   `json:"newsletter_id" validate:"required"`
-	Subscriber   Subscriber      `json:"subscriber" validate:"required"`
+	Email        string          `json:"email" validate:"email" required:"true"`
 	CreatedAt    time.Time       `json:"created_at"`
-}
-
-type Subscriber struct {
-	SubscriberID id.Subscriber `json:"subscriber_id" validate:"required"`
-	Email        string        `json:"email" validate:"email" required:"true"`
 }
 
 type Post struct {

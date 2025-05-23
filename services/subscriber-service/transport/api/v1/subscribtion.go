@@ -2,15 +2,12 @@ package v1
 
 import (
 	"errors"
-	"html/template"
 	"net/http"
 
 	//"os"
-	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/go-playground/validator/v10"
-	"github.com/google/uuid"
 
 	"subscriber-api/pkg/id"
 	svcmodel "subscriber-api/service/model"
@@ -42,27 +39,18 @@ func (h *Handler) SubscribeToNewsletter(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *Handler) ConfirmSubscription(w http.ResponseWriter, r *http.Request) {
-	var subscription svcmodel.Subscription
 	var err error
-
-	subscription.NewsletterID = getNewsletterId(w, r)
-
-	subscription = svcmodel.Subscription{
-		ID:        id.Subscription(uuid.New()),
-		CreatedAt: time.Now(),
-		Subscriber: svcmodel.Subscriber{
-			SubscriberID: id.Subscriber(uuid.New()),
-			Email:        getEmail(w, r),
-		},
+	subReq := svcmodel.SubscribeRequest{
+		NewsletterID: getNewsletterId(w, r),
+		Email:        getEmail(w, r),
 	}
 
-	if err := validate.Struct(subscription); err != nil {
+	if err := validate.Struct(subReq); err != nil {
 		util.WriteErrResponse(w, http.StatusBadRequest, err)
 		return
 	}
 
-	_, err = h.service.ConfirmSubscription(r.Context(), subscription)
-	if err != nil {
+	if _, err = h.service.ConfirmSubscription(r.Context(), subReq); err != nil {
 		util.WriteErrResponse(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -93,36 +81,25 @@ func (h *Handler) ConfirmSubscription(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) UnsubscribeFromNewsletter(w http.ResponseWriter, r *http.Request) {
 	newsletterID := getNewsletterId(w, r)
+	subscriptionID := id.Subscription{} //TBD TBD TBD
 
-	email := getEmail(w, r)
-	if email == "" {
-		util.WriteErrResponse(w, http.StatusBadRequest, errors.New("email is required"))
-		return
-	}
-	if err := validate.Var(email, "email"); err != nil {
-		util.WriteErrResponse(w, http.StatusBadRequest, err)
-		return
-	}
-
-	_, err := h.service.UnsubscribeFromNewsletter(r.Context(), newsletterID, email)
-
-	if err != nil {
+	if err := h.service.UnsubscribeFromNewsletter(r.Context(), newsletterID, subscriptionID); err != nil {
 		util.WriteErrResponse(w, http.StatusInternalServerError, err)
 		return
 	}
+	/*
+		tmpl, err := template.ParseFiles("templates/pages/unsubscribe_success.html")
 
-	tmpl, err := template.ParseFiles("templates/pages/unsubscribe_success.html")
+		if err != nil {
+			util.WriteErrResponse(w, http.StatusInternalServerError, err)
+			return
+		}
 
-	if err != nil {
-		util.WriteErrResponse(w, http.StatusInternalServerError, err)
-		return
-	}
-
-	if err := tmpl.Execute(w, nil); err != nil {
-		util.WriteErrResponse(w, http.StatusInternalServerError, err)
-		return
-	}
-
+		if err := tmpl.Execute(w, nil); err != nil {
+			util.WriteErrResponse(w, http.StatusInternalServerError, err)
+			return
+		}
+	*/
 }
 
 func getEmail(w http.ResponseWriter, r *http.Request) string {

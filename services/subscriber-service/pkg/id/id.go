@@ -56,27 +56,28 @@ func (n *Newsletter) UnmarshalText(data []byte) error {
 	return unmarshalUUID((*uuid.UUID)(n), "Newsletter", data)
 }
 
-// Subscriber methods
-func (s *Subscriber) FromString(str string) error {
-	return fromString((*uuid.UUID)(s), str)
-}
+/*
+	// Subscriber methods
+	func (s *Subscriber) FromString(str string) error {
+		return fromString((*uuid.UUID)(s), str)
+	}
 
-func (s Subscriber) String() string {
-	return uuid.UUID(s).String()
-}
+	func (s Subscriber) String() string {
+		return uuid.UUID(s).String()
+	}
 
-func (s *Subscriber) Scan(data any) error {
-	return scanUUID((*uuid.UUID)(s), "Subscriber", data)
-}
+	func (s *Subscriber) Scan(data any) error {
+		return scanUUID((*uuid.UUID)(s), "Subscriber", data)
+	}
 
-func (s Subscriber) MarshalText() ([]byte, error) {
-	return []byte(uuid.UUID(s).String()), nil
-}
+	func (s Subscriber) MarshalText() ([]byte, error) {
+		return []byte(uuid.UUID(s).String()), nil
+	}
 
-func (s *Subscriber) UnmarshalText(data []byte) error {
-	return unmarshalUUID((*uuid.UUID)(s), "Subscriber", data)
-}
-
+	func (s *Subscriber) UnmarshalText(data []byte) error {
+		return unmarshalUUID((*uuid.UUID)(s), "Subscriber", data)
+	}
+*/
 // Post methods
 func (p *Post) FromString(str string) error {
 	return fromString((*uuid.UUID)(p), str)

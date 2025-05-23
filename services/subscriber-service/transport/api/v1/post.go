@@ -21,11 +21,7 @@ func (h *Handler) SendPublishedPost(w http.ResponseWriter, r *http.Request) {
 
 	var post svcmodel.Post
 
-	post.ID, err = getPostId(w, r)
-	if err != nil {
-		util.WriteErrResponse(w, http.StatusBadRequest, err)
-		return
-	}
+	post.ID = getPostId(w, r)
 
 	if err := json.Unmarshal(b, &post); err != nil {
 		util.WriteErrResponse(w, http.StatusBadRequest, err)
@@ -37,20 +33,18 @@ func (h *Handler) SendPublishedPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	post, err = h.service.SendPublishedPost(r.Context(), post)
-
-	if err != nil {
+	if err = h.service.SendPublishedPost(r.Context(), post); err != nil {
 		util.WriteErrResponse(w, http.StatusInternalServerError, err)
 		return
 	}
-
 	util.WriteResponse(w, http.StatusOK, post)
 }
 
-func getPostId(w http.ResponseWriter, r *http.Request) (id.Post, error) {
+func getPostId(w http.ResponseWriter, r *http.Request) id.Post {
 	var postID id.Post
 	if err := postID.FromString(chi.URLParam(r, "id")); err != nil {
-		return id.Post{}, err
+		util.WriteErrResponse(w, http.StatusBadRequest, err)
+		return id.Post{}
 	}
-	return postID, nil
+	return postID
 }

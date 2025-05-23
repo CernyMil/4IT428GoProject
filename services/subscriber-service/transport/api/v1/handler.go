@@ -23,13 +23,14 @@ func (h *Handler) initRouter() {
 
 	// TODO: Setup middleware.
 
-	r.Route("newsletters/{newsletterId}", func(r chi.Router) {
+	r.Route("/newsletters/{newsletterId}", func(r chi.Router) {
 		r.Post("/subscribe", h.SubscribeToNewsletter)
 		r.Delete("/unsubscribe", h.UnsubscribeFromNewsletter)
 		r.Get("/confirm", h.ConfirmSubscription)
 		r.Get("/posts/{postId}/publish", h.SendPublishedPost)
 		r.Delete("/delete", h.DeleteNewsletter)
 	})
+	h.Mux = r
 
 	/*r.Route("newsletters/{newsletterId}/posts", func(r chi.Router) {
 		r.Post("/", h.SendEmail)
