@@ -16,7 +16,7 @@ import (
 
 func main() {
 	dbURL := os.Getenv("DATABASE_URL")
-	firebaseCred := os.Getenv("FIREBASE_CRED")
+	firebaseCred := "firebase-cred.json"
 
 	dbpool, err := pgxpool.New(context.Background(), dbURL)
 	if err != nil {
@@ -37,6 +37,6 @@ func main() {
 
 	r.Post("/signup", handler.SignUp)
 
-	log.Println("Server running on :8080")
-	http.ListenAndServe(":8080", r)
+	log.Println("Server running on :8081")
+	http.ListenAndServe(":8081", r)
 }
