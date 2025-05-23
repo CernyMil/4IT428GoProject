@@ -1,5 +1,6 @@
 package service
 
+/*
 import (
 	"context"
 
@@ -83,7 +84,7 @@ func (hd *CustomHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 		handleError(w, "ID is required", nil, http.StatusBadRequest)
 		return
 	}
-	
+
 	posts, err := hd.Repository.ListPosts(r.Context(), newsletterId)
 	if err != nil {
 		handleError(w, "Failed to fetch posts", err, http.StatusInternalServerError)
@@ -106,9 +107,9 @@ func (hd *CustomHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 			"newsletterId":   newsletter.ID,
 			"userId":         subscriber.ID,
 		}
-	
+
 		mail, loadErr := loadEmailTemplate(data)
-	
+
 		if loadErr != nil {
 			log.Printf("Failed load mail template: %v", err)
 		}
@@ -131,3 +132,5 @@ func (hd *CustomHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
     }
 
 	sendJSON(w, post, http.StatusOK)
+
+*/

@@ -2,41 +2,48 @@ package service
 
 import (
 	"context"
+
+	"github.com/google/uuid"
+
 	"subscriber-api/pkg/id"
 	svcmodel "subscriber-api/service/model"
 )
 
 func (s Service) SubscribeToNewsletter(ctx context.Context, subReq svcmodel.SubscribeRequest) error {
-	errEmail := mail.SendConfirmationRequestMail(email, newsletterId.String())
+	/*
+		subscriptionId := id.Subscription(uuid.New())
+			errEmail := mail.SendConfirmationRequestMail(email, newsletterId.String())
 
-	if errEmail != nil {
-		return nil, errEmail
-	}
+			if errEmail != nil {
+				return nil, errEmail
+			}
 
-	return err
+			return err
+	*/
+	return nil // temporary TBD
 }
 
-func (s Service) UnsubscribeFromNewsletter(ctx context.Context, newsletterId id.Newsletter, email string) error {
-	err := s.repository.RemoveSubscription(ctx, newsletterId, email)
+func (s Service) ConfirmSubscription(ctx context.Context, subReq svcmodel.SubscribeRequest) (svcmodel.Subscription, error) {
+	subscriptionId := id.Subscription(uuid.New())
+	subscription, err := s.repository.AddSubscription(ctx, subReq.NewsletterID, subscriptionId, subReq.Email)
 	if err != nil {
-		return err
+		return svcmodel.Subscription{}, err
 	}
-	return err
-}
-
-func (s Service) ConfirmSubscription(ctx context.Context, subscription svcmodel.Subscription) (*svcmodel.Subscription, error) {
-	newSubscription, err := s.repository.AddSubscription(ctx, subscription)
-	if err != nil {
-		return nil, err
-	}
-
+	/*  TBD
 	errEmail := mail.SendConfirmationMail(email, newsletterId.String())
 
 	if errEmail != nil {
 		return nil, errEmail
 	}
+	*/
+	return *subscription, err
+}
 
-	return newSubscription, err
+func (s Service) UnsubscribeFromNewsletter(ctx context.Context, newsletterId id.Newsletter, subscriptionId id.Subscription) error {
+	if err := s.repository.DeleteSubscription(ctx, newsletterId, subscriptionId); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s Service) DeleteNewsletter(ctx context.Context, newsletterId id.Newsletter) error {
@@ -53,7 +60,7 @@ func loadEmailTemplate(data map[string]string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
+;
 	var builder strings.Builder
 	scanner := bufio.NewScanner(strings.NewReader(string(fileData)))
 	for scanner.Scan() {

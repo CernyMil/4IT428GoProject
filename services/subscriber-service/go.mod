@@ -11,6 +11,7 @@ require (
 	github.com/go-playground/validator/v10 v10.11.2
 	go.strv.io/env v0.1.0
 	go.strv.io/net v0.6.2
+	google.golang.org/api v0.233.0
 )
 
 require (
@@ -54,7 +55,6 @@ require (
 	golang.org/x/oauth2 v0.30.0 // indirect
 	golang.org/x/sync v0.14.0 // indirect
 	golang.org/x/time v0.11.0 // indirect
-	google.golang.org/api v0.233.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto v0.0.0-20250303144028-a0af3efb3deb // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250505200425-f936aa4a68b2 // indirect

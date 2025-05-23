@@ -1,5 +1,6 @@
 package service
 
+/*
 import (
 	"bytes"
 	"html/template"
@@ -169,3 +170,5 @@ func SendNewPostMail(subscribers []string, post *svcmodel.Post) error {
 	if emailErr != nil {
 		log.Printf("Failed to send email to %s: %v", subscriber.Email, err)
 	}
+
+*/

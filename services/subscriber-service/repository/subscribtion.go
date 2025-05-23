@@ -2,32 +2,38 @@ package repository
 
 import (
 	"context"
+	"time"
+
 	"subscriber-api/pkg/id"
 	"subscriber-api/repository/model"
 	svcmodel "subscriber-api/service/model"
-
-	"cloud.google.com/go/firestore"
 )
 
-func AddSubscription(ctx context.Context, client *firestore.Client, subscription svcmodel.Subscription) error {
-	newsletterID := subscription.NewsletterID.String()
-	subscriptionID := subscription.ID.String()
-	storeSubscription := model.Subscription{
-		CreatedAt: subscription.CreatedAt,
-		Email:     subscription.Subscriber.Email,
+func (r *Repository) AddSubscription(ctx context.Context, newsletterId id.Newsletter, subscribtionId id.Subscription, email string) (*svcmodel.Subscription, error) {
+	client := r.client
+
+	storeSubscription := model.StoreSubscription{
+		Email:     email,
+		CreatedAt: time.Now(),
 	}
 
-	_, err := client.Collection("newsletters").Doc(newsletterID).Collection("subscriptions").Doc(subscriptionID).Set(ctx, storeSubscription)
-
-	if err != nil {
-		return err
+	if _, err := client.Collection("subscription_service_newsletters").Doc(newsletterId.String()).Collection("subscriptions").Doc(subscribtionId.String()).Set(ctx, storeSubscription); err != nil {
+		return nil, err
 	}
-	return nil
+
+	subscription := svcmodel.Subscription{
+		ID:           subscribtionId,
+		NewsletterID: newsletterId,
+		CreatedAt:    storeSubscription.CreatedAt,
+		Email:        email,
+	}
+
+	return &subscription, nil
 }
 
-func RemoveSubscription(ctx context.Context, client *firestore.Client, newsletter id.Newsletter, email string) error {
-
-	_, err := client.Collection("newsletters").Doc(newsletter.String()).Collection("subscriptions").Doc(email).Delete(ctx)
+func (r *Repository) DeleteSubscription(ctx context.Context, newsletterId id.Newsletter, subscribtionId id.Subscription) error {
+	client := r.client
+	_, err := client.Collection("subscription_service_newsletters").Doc(newsletterId.String()).Collection("subscriptions").Doc(subscribtionId.String()).Delete(ctx)
 	if err != nil {
 		return err
 	}
