@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"subscriber-api/pkg/id"
-	svcmodel "subscriber-api/service/model"
+	"subscriber-api/transport/api/v1/model"
 	"subscriber-api/transport/util"
 
 	"github.com/go-chi/chi"
@@ -19,7 +19,7 @@ func (h *Handler) SendPublishedPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var post svcmodel.Post
+	var post model.Post
 
 	post.ID = getPostId(w, r)
 

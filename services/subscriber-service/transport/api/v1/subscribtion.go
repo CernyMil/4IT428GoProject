@@ -10,6 +10,7 @@ import (
 	"github.com/go-playground/validator/v10"
 
 	"subscriber-api/pkg/id"
+	token "subscriber-api/pkg/token"
 	svcmodel "subscriber-api/service/model"
 	"subscriber-api/transport/util"
 )
@@ -39,10 +40,21 @@ func (h *Handler) SubscribeToNewsletter(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *Handler) ConfirmSubscription(w http.ResponseWriter, r *http.Request) {
-	var err error
+	tokenString := r.URL.Query().Get("token")
+	if tokenString == "" {
+		util.WriteErrResponse(w, http.StatusBadRequest, errors.New("missing token"))
+		return
+	}
+
+	email, err := token.DecryptToken(tokenString)
+	if err != nil {
+		util.WriteErrResponse(w, http.StatusBadRequest, errors.New("invalid or expired token"))
+		return
+	}
+
 	subReq := svcmodel.SubscribeRequest{
 		NewsletterID: getNewsletterId(w, r),
-		Email:        getEmail(w, r),
+		Email:        email,
 	}
 
 	if err := validate.Struct(subReq); err != nil {

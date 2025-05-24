@@ -12,11 +12,11 @@ type Subscription struct {
 	CreatedAt    time.Time       `json:"created_at"`
 }
 
-type Post struct {
-	ID           id.Post `json:"id" validate:"required"`
-	NewsletterID string  `json:"newsletter_id" validate:"required"`
-	Title        string  `json:"title" validate:"required"`
-	Body         string  `json:"body" validate:"required"`
+type PostHTML struct {
+	Email           string `json:"Email" validate:"required"`
+	Title           string `json:"title" validate:"required"`
+	Content         string `json:"content" validate:"required"`
+	UnsubscribeLink string `json:"unsubscribeLink" validate:"required"`
 }
 
 type SubscribeRequest struct {
