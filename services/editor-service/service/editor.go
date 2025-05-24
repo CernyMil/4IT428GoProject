@@ -6,7 +6,10 @@ import (
 	uuidutil "editor-service/pkg/id"
 	"editor-service/repository"
 	transport "editor-service/transport/middleware"
+	"fmt"
 	"time"
+
+	"firebase.google.com/go/auth"
 )
 
 type EditorService struct {
@@ -18,21 +21,21 @@ func NewEditorService(repo repository.EditorRepositoryInterface, auth *transport
 	return &EditorService{repo: repo, auth: auth}
 }
 
-func (s *EditorService) SignUp(ctx context.Context, idToken, firstName, lastName string) error {
-	token, err := s.auth.VerifyIDToken(ctx, idToken)
+func (s *EditorService) SignUp(ctx context.Context, email, password, firstName, lastName string) error {
+	params := (&auth.UserToCreate{}).
+		Email(email).
+		Password(password)
+	userRecord, err := s.auth.Client.CreateUser(ctx, params)
 	if err != nil {
-		return err
+		return fmt.Errorf("firebase create user error: %w", err)
 	}
-
-	email := token.Claims["email"].(string)
 
 	editor := &models.Editor{
 		ID:        uuidutil.NewUUID(),
-		Email:     email,
+		Email:     userRecord.Email,
 		FirstName: firstName,
 		LastName:  lastName,
 		CreatedAt: time.Now(),
 	}
-
 	return s.repo.CreateEditor(ctx, editor)
 }

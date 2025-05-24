@@ -1,7 +1,6 @@
 package transport
 
 import (
-	"context"
 	"editor-service/service"
 	"encoding/json"
 	"net/http"
@@ -16,7 +15,8 @@ func NewEditorHandler(service *service.EditorService) *EditorHandler {
 }
 
 type signUpRequest struct {
-	IDToken   string `json:"id_token"`
+	Email     string `json:"email"`
+	Password  string `json:"password"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 }
@@ -28,9 +28,9 @@ func (h *EditorHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := h.service.SignUp(context.Background(), req.IDToken, req.FirstName, req.LastName)
+	err := h.service.SignUp(r.Context(), req.Email, req.Password, req.FirstName, req.LastName)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
