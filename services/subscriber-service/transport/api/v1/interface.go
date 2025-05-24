@@ -5,6 +5,7 @@ import (
 
 	"subscriber-api/pkg/id"
 	svcmodel "subscriber-api/service/model"
+	"subscriber-api/transport/api/v1/model"
 )
 
 type SubscriberService interface {
@@ -12,7 +13,7 @@ type SubscriberService interface {
 	ConfirmSubscription(ctx context.Context, subReq svcmodel.SubscribeRequest) (svcmodel.Subscription, error)
 	UnsubscribeFromNewsletter(ctx context.Context, newsletterId id.Newsletter, subscriptionId id.Subscription) error
 	DeleteNewsletter(ctx context.Context, newsletterId id.Newsletter) error
-	SendPublishedPost(ctx context.Context, post svcmodel.Post) error
+	SendPublishedPost(ctx context.Context, post model.Post) error
 
 	//SendConfirmationEmail(to, newsletterName, confirmLink string) error
 	//SendNewsletterEmail(to, newsletterName, content, unsubscribeLink string) error

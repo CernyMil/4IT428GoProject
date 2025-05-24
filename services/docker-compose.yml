@@ -36,7 +36,10 @@ services:
       - "8083:8083"
     environment:
       PORT: 8083
-      SERVICE_ACCOUNT: "/app/goproject-4c949-firebase-adminsdk-fbsvc-564d6d7e63.json"
+      SERVICE_ACCOUNT: "/app/firebase-admin-sdk.json"
+      EMAIL_ADDRESS: ""
+      NEWSLETTER_ENCRYPTION_KEY: "Ad3WLMuS0Fc+fPKV6bbTECkgkTH+GCoXq8R7ieavZvk="
+      BASE_URL: "http://localhost:8080"
 
 volumes:
   postgres_data:

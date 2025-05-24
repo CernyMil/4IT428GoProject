@@ -24,10 +24,7 @@ type Controller struct {
 	version string
 }
 
-func NewController(
-	service apiv1.SubscriberService,
-	version string,
-) (*Controller, error) {
+func NewController(service apiv1.SubscriberService, version string) (*Controller, error) {
 	controller := &Controller{
 		service: service,
 		version: version,

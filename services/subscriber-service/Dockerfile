@@ -15,7 +15,7 @@ FROM alpine:latest
 WORKDIR /app
 
 COPY --from=builder /app/subscriber-service .
-COPY goproject-4c949-firebase-adminsdk-fbsvc-564d6d7e63.json . 
+COPY firebase-admin-sdk.json . 
 
 EXPOSE 8083
 
