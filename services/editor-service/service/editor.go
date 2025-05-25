@@ -39,3 +39,32 @@ func (s *EditorService) SignUp(ctx context.Context, email, password, firstName, 
 	}
 	return s.repo.CreateEditor(ctx, editor)
 }
+
+func (s *EditorService) GetByEmail(ctx context.Context, email string) (*models.Editor, error) {
+	return s.repo.GetEditorByEmail(ctx, email)
+}
+
+func (s *EditorService) VerifyIDTokenAndGetEmail(ctx context.Context, idToken string) (string, error) {
+	token, err := s.auth.Client.VerifyIDToken(ctx, idToken)
+	if err != nil {
+		return "", err
+	}
+	email, ok := token.Claims["email"].(string)
+	if !ok || email == "" {
+		return "", fmt.Errorf("email not found in token")
+	}
+	return email, nil
+}
+
+func (s *EditorService) ChangePassword(ctx context.Context, email, newPassword string) error {
+	user, err := s.auth.Client.GetUserByEmail(ctx, email)
+	if err != nil {
+		return fmt.Errorf("firebase get user error: %w", err)
+	}
+	params := (&auth.UserToUpdate{}).Password(newPassword)
+	_, err = s.auth.Client.UpdateUser(ctx, user.UID, params)
+	if err != nil {
+		return fmt.Errorf("firebase update user error: %w", err)
+	}
+	return nil
+}
