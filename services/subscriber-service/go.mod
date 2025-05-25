@@ -9,6 +9,7 @@ require (
 	firebase.google.com/go v3.13.0+incompatible
 	github.com/go-chi/chi v1.5.4
 	github.com/go-playground/validator/v10 v10.11.2
+	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/resend/resend-go/v2 v2.20.0
 	go.strv.io/env v0.1.0
 	go.strv.io/net v0.6.2

@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"os"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -13,9 +14,14 @@ import (
 )
 
 func (s Service) SubscribeToNewsletter(ctx context.Context, subReq svcmodel.SubscribeRequest) error {
-
 	newsletterId := subReq.NewsletterID.String()
-	token, err := token.GenerateEncryptedToken(subReq.Email)
+
+	claims := map[string]interface{}{
+		"email":        subReq.Email,
+		"newsletterId": subReq.NewsletterID,
+	}
+
+	token, err := token.GenerateJWT(claims, 24*time.Hour)
 	if err != nil {
 		return err
 	}
@@ -30,7 +36,13 @@ func (s Service) SubscribeToNewsletter(ctx context.Context, subReq svcmodel.Subs
 func (s Service) ConfirmSubscription(ctx context.Context, subReq svcmodel.SubscribeRequest) (svcmodel.Subscription, error) {
 	subscriptionId := id.Subscription(uuid.New())
 
-	token, err := token.GenerateEncryptedToken(subscriptionId.String())
+	claims := map[string]interface{}{
+		"email":          subReq.Email,
+		"newsletterId":   subReq.NewsletterID,
+		"subscriptionId": subscriptionId,
+	}
+
+	token, err := token.GenerateJWT(claims, 0)
 	if err != nil {
 		return svcmodel.Subscription{}, err
 	}

@@ -1,83 +1,40 @@
 package pkg
 
 import (
-	"crypto/aes"
-	"crypto/cipher"
-	"crypto/rand"
-	"encoding/base64"
 	"errors"
-	"fmt"
-	"io"
 	"os"
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
-func GenerateEncryptedToken(stringID string) (string, error) {
-	encryptionKey, err := getEncryptionKey()
-	if err != nil {
-		return "", err
-	}
+var jwtSecret = []byte(os.Getenv("NEWSLETTER_JWT_SECRET"))
 
-	block, err := aes.NewCipher(encryptionKey)
-	if err != nil {
-		return "", err
+// GenerateJWT creates a JWT with arbitrary claims
+func GenerateJWT(claimsMap map[string]interface{}, expiresIn time.Duration) (string, error) {
+	claims := jwt.MapClaims{}
+	for k, v := range claimsMap {
+		claims[k] = v
 	}
-
-	// Create a GCM mode
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		return "", err
+	if expiresIn > 0 {
+		claims["exp"] = time.Now().Add(expiresIn).Unix()
 	}
-
-	// Generate nonce
-	nonce := make([]byte, gcm.NonceSize())
-	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
-		return "", err
-	}
-
-	// Encrypt the subscriptionID
-	ciphertext := gcm.Seal(nonce, nonce, []byte(stringID), nil)
-	return base64.URLEncoding.EncodeToString(ciphertext), nil
+	claims["exp"] = time.Now().Add(expiresIn).Unix()
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(jwtSecret)
 }
 
-func DecryptToken(encryptedToken string) (string, error) {
-	encryptionKey, err := getEncryptionKey()
-	if err != nil {
-		return "", err
+// ParseJWT parses and returns all claims
+func ParseJWT(tokenString string) (map[string]interface{}, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return jwtSecret, nil
+	})
+	if err != nil || !token.Valid {
+		return nil, errors.New("invalid or expired token")
 	}
-
-	ciphertext, err := base64.URLEncoding.DecodeString(encryptedToken)
-	if err != nil {
-		return "", err
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return nil, errors.New("invalid claims")
 	}
-
-	block, err := aes.NewCipher(encryptionKey)
-	if err != nil {
-		return "", err
-	}
-
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		return "", err
-	}
-
-	nonceSize := gcm.NonceSize()
-	if len(ciphertext) < nonceSize {
-		return "", errors.New("ciphertext too short")
-	}
-
-	nonce, ciphertext := ciphertext[:nonceSize], ciphertext[nonceSize:]
-	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
-	if err != nil {
-		return "", err
-	}
-
-	return string(plaintext), nil
-}
-
-func getEncryptionKey() ([]byte, error) {
-	key := os.Getenv("NEWSLETTER_ENCRYPTION_KEY")
-	if len(key) != 32 { // AES-256 requires 32 bytes
-		return nil, fmt.Errorf("invalid key length")
-	}
-	return []byte(key), nil
+	return claims, nil
 }

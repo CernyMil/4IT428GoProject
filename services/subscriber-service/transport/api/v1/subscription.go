@@ -17,10 +17,8 @@ var validate = validator.New()
 
 func (h *Handler) SubscribeToNewsletter(w http.ResponseWriter, r *http.Request) {
 	var subReq svcmodel.SubscribeRequest
-	var err error
 
 	subReq.NewsletterID = getNewsletterId(w, r)
-
 	subReq.Email = getEmail(w, r)
 
 	if err := validate.Struct(subReq); err != nil {
@@ -28,7 +26,7 @@ func (h *Handler) SubscribeToNewsletter(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	err = h.service.SubscribeToNewsletter(r.Context(), subReq)
+	err := h.service.SubscribeToNewsletter(r.Context(), subReq)
 	if err != nil {
 		util.WriteErrResponse(w, http.StatusInternalServerError, err)
 		return
@@ -44,14 +42,28 @@ func (h *Handler) ConfirmSubscription(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	email, err := token.DecryptToken(tokenString)
+	claims, err := token.ParseJWT(tokenString)
 	if err != nil {
 		util.WriteErrResponse(w, http.StatusBadRequest, errors.New("invalid or expired token"))
 		return
 	}
 
+	email, ok := claims["email"].(string)
+	if !ok {
+		util.WriteErrResponse(w, http.StatusBadRequest, errors.New("invalid email in token claims"))
+		return
+	}
+
+	newsletterId, ok := claims["newsletterId"].(string)
+	if !ok {
+		util.WriteErrResponse(w, http.StatusBadRequest, errors.New("invalid newsletterId in token claims"))
+		return
+	}
+	var newsletterID id.Newsletter
+	newsletterID.FromString(newsletterId)
+
 	subReq := svcmodel.SubscribeRequest{
-		NewsletterID: getNewsletterId(w, r),
+		NewsletterID: newsletterID,
 		Email:        email,
 	}
 
@@ -71,13 +83,26 @@ func (h *Handler) UnsubscribeFromNewsletter(w http.ResponseWriter, r *http.Reque
 	unsubReq.NewsletterID = getNewsletterId(w, r)
 	tokenString := getToken(w, r)
 
-	subscriptionStr, err := token.DecryptToken(tokenString)
+	claims, err := token.ParseJWT(tokenString)
 	if err != nil {
 		util.WriteErrResponse(w, http.StatusBadRequest, errors.New("invalid or expired token"))
 		return
 	}
-	if err := unsubReq.SubscriptionID.FromString(subscriptionStr); err != nil {
-		util.WriteErrResponse(w, http.StatusBadRequest, errors.New("invalid subscription ID in token"))
+
+	subcscriptionId, ok := claims["subscriptionId"].(string)
+	if !ok {
+		util.WriteErrResponse(w, http.StatusBadRequest, errors.New("invalid subscriptionId in token claims"))
+		return
+	}
+	var subscriptionID id.Subscription
+	if err := subscriptionID.FromString(subcscriptionId); err != nil {
+		util.WriteErrResponse(w, http.StatusBadRequest, errors.New("invalid subscriptionId"))
+		return
+	}
+	unsubReq.SubscriptionID = subscriptionID
+
+	if err := validate.Struct(unsubReq); err != nil {
+		util.WriteErrResponse(w, http.StatusBadRequest, err)
 		return
 	}
 

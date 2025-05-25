@@ -61,22 +61,14 @@ func (c *Controller) initRouter() {
 
 // TODO: Improve this handler.
 func (c *Controller) OpenAPI(w http.ResponseWriter, _ *http.Request) {
-	if err := httpx.WriteResponse(
-		w,
-		OpenAPI,
-		http.StatusOK,
-	); err != nil {
+	if err := httpx.WriteResponse(w, OpenAPI, http.StatusOK); err != nil {
 		slog.Error("writing response", slog.Any("error", err))
 	}
 }
 
 // TODO: Improve this handler.
 func (c *Controller) Version(w http.ResponseWriter, _ *http.Request) {
-	if err := httpx.WriteResponse(
-		w,
-		c.version,
-		http.StatusOK,
-	); err != nil {
+	if err := httpx.WriteResponse(w, c.version, http.StatusOK); err != nil {
 		slog.Error("writing response", slog.Any("error", err))
 	}
 }

@@ -8,9 +8,7 @@ type Handler struct {
 	service SubscriberService
 }
 
-func NewHandler(
-	service SubscriberService,
-) *Handler {
+func NewHandler(service SubscriberService) *Handler {
 	h := &Handler{
 		service: service,
 	}
