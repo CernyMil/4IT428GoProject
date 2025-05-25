@@ -47,7 +47,10 @@ func (s Service) ConfirmSubscription(ctx context.Context, subReq svcmodel.Subscr
 	return *subscription, nil
 }
 
-func (s Service) UnsubscribeFromNewsletter(ctx context.Context, newsletterId id.Newsletter, subscriptionId id.Subscription) error {
+func (s Service) UnsubscribeFromNewsletter(ctx context.Context, unsubReq svcmodel.UnsubscribeRequest) error {
+	newsletterId := unsubReq.NewsletterID.String()
+	subscriptionId := unsubReq.SubscriptionID.String()
+
 	if err := s.repository.DeleteSubscription(ctx, newsletterId, subscriptionId); err != nil {
 		return err
 	}

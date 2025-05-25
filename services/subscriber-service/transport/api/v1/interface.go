@@ -11,10 +11,7 @@ import (
 type SubscriberService interface {
 	SubscribeToNewsletter(ctx context.Context, subReq svcmodel.SubscribeRequest) error
 	ConfirmSubscription(ctx context.Context, subReq svcmodel.SubscribeRequest) (svcmodel.Subscription, error)
-	UnsubscribeFromNewsletter(ctx context.Context, newsletterId id.Newsletter, subscriptionId id.Subscription) error
+	UnsubscribeFromNewsletter(ctx context.Context, unsubReq svcmodel.UnsubscribeRequest) error
 	DeleteNewsletter(ctx context.Context, newsletterId id.Newsletter) error
 	SendPublishedPost(ctx context.Context, post model.Post) error
-
-	//SendConfirmationEmail(to, newsletterName, confirmLink string) error
-	//SendNewsletterEmail(to, newsletterName, content, unsubscribeLink string) error
 }
