@@ -23,3 +23,8 @@ type SubscribeRequest struct {
 	NewsletterID id.Newsletter `json:"newsletter_id" validate:"required,uuid"`
 	Email        string        `json:"email" validate:"required,email"`
 }
+
+type UnsubscribeRequest struct {
+	NewsletterID   id.Newsletter   `json:"newsletter_id" validate:"required,uuid"`
+	SubscriptionID id.Subscription `json:"subscription_id" validate:"required,uuid"`
+}

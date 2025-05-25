@@ -4,8 +4,6 @@ import (
 	"errors"
 	"net/http"
 
-	//"os"
-
 	"github.com/go-chi/chi"
 	"github.com/go-playground/validator/v10"
 
@@ -66,52 +64,27 @@ func (h *Handler) ConfirmSubscription(w http.ResponseWriter, r *http.Request) {
 		util.WriteErrResponse(w, http.StatusInternalServerError, err)
 		return
 	}
-
-	/*
-		baseUrl := os.Getenv("BASE_URL")
-
-		tmpl, err := template.ParseFiles("templates/pages/confirm_success.html")
-		if err != nil {
-			util.WriteErrResponse(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		templateData := struct {
-			SubscriberEmail string
-			UnsubscribeLink string
-		}{
-			SubscriberEmail: email,
-			UnsubscribeLink: baseUrl + "/api/v1/newsletters/" + newsletterID.String() + "/unsubscribe?email=" + email,
-		}
-
-		if err := tmpl.Execute(w, templateData); err != nil {
-			util.WriteErrResponse(w, http.StatusInternalServerError, err)
-			return
-		}
-	*/
 }
 
 func (h *Handler) UnsubscribeFromNewsletter(w http.ResponseWriter, r *http.Request) {
-	newsletterID := getNewsletterId(w, r)
-	subscriptionID := id.Subscription{} //TBD TBD TBD
+	var unsubReq svcmodel.UnsubscribeRequest
+	unsubReq.NewsletterID = getNewsletterId(w, r)
+	tokenString := getToken(w, r)
 
-	if err := h.service.UnsubscribeFromNewsletter(r.Context(), newsletterID, subscriptionID); err != nil {
+	subscriptionStr, err := token.DecryptToken(tokenString)
+	if err != nil {
+		util.WriteErrResponse(w, http.StatusBadRequest, errors.New("invalid or expired token"))
+		return
+	}
+	if err := unsubReq.SubscriptionID.FromString(subscriptionStr); err != nil {
+		util.WriteErrResponse(w, http.StatusBadRequest, errors.New("invalid subscription ID in token"))
+		return
+	}
+
+	if err := h.service.UnsubscribeFromNewsletter(r.Context(), unsubReq); err != nil {
 		util.WriteErrResponse(w, http.StatusInternalServerError, err)
 		return
 	}
-	/*
-		tmpl, err := template.ParseFiles("templates/pages/unsubscribe_success.html")
-
-		if err != nil {
-			util.WriteErrResponse(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		if err := tmpl.Execute(w, nil); err != nil {
-			util.WriteErrResponse(w, http.StatusInternalServerError, err)
-			return
-		}
-	*/
 }
 
 func getEmail(w http.ResponseWriter, r *http.Request) string {
@@ -130,4 +103,13 @@ func getNewsletterId(w http.ResponseWriter, r *http.Request) id.Newsletter {
 		http.Error(w, "invalid newsletter ID", http.StatusBadRequest)
 	}
 	return newsletterID
+}
+
+func getToken(w http.ResponseWriter, r *http.Request) string {
+	token := r.URL.Query().Get("token")
+	if token == "" {
+		util.WriteErrResponse(w, http.StatusBadRequest, errors.New("missing token"))
+		return ""
+	}
+	return token
 }

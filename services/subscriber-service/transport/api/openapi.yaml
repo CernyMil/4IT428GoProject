@@ -15,14 +15,14 @@ paths:
       summary: Check the healthiness of the service
       responses:
         "204":
-          description: It's ALIVE (a.k.a. service is up and running)
+          description: Service is operational
         "400":
           description: Invalid request
 
-  "/newsletters/{newsletterId}/remove":
+  "/nginx/newsletters/{newsletterId}/delete":
     delete:
-      summary: Remove a newsletter
-      operationId: RemoveNewsletter
+      summary: Delete a newsletter
+      operationId: DeleteNewsletter
       parameters:
         - name: newsletterId
           in: path
@@ -71,12 +71,11 @@ paths:
           required: true
           schema:
             type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UnsubscribeRequest"
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
       responses:
         "200":
           description: Unsubscribed successfully
@@ -99,12 +98,13 @@ paths:
           schema:
             type: string
       responses:
-        "200":
-          description: Subscription confirmed
-        "400":
-          description: Invalid or expired token
-
-  "/newsletters/{newsletterId}/posts/{postId}/publish":
+        - name: token
+          in: query
+          required: true
+          description: Token used to confirm the subscription
+          schema:
+            type: string
+  "/nginx/newsletters/{newsletterId}/posts/{postId}/publish":
     get:
       summary: Send published post to subscribers
       operationId: SendPublishedPost
@@ -121,6 +121,7 @@ paths:
             type: string
       responses:
         "200":
+          description: Post delivery process to subscribers has been successfully initiated
           description: Post sent to subscribers
         "400":
           description: Invalid request
@@ -132,14 +133,16 @@ components:
       properties:
         email:
           type: string
+          format: email
       required:
-        - email
     UnsubscribeRequest:
       type: object
       properties:
         email:
           type: string
+          format: email
       required:
+        - email
         - email
     Subscription:
       type: object
@@ -149,9 +152,10 @@ components:
         newsletterId:
           type: string
         email:
-          type: string
         createdAt:
           type: string
+          format: date-time
+          description: The timestamp when the subscription was created
           format: date-time
       required:
         - id

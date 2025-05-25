@@ -11,7 +11,7 @@ import (
 	svcmodel "subscriber-api/service/model"
 )
 
-func (r *Repository) AddSubscription(ctx context.Context, newsletterId id.Newsletter, subscribtionId id.Subscription, email string, token string) (*svcmodel.Subscription, error) {
+func (r *Repository) AddSubscription(ctx context.Context, newsletterId id.Newsletter, subscriptionId id.Subscription, email string, token string) (*svcmodel.Subscription, error) {
 	client := r.client
 
 	storeSubscription := map[string]interface{}{
@@ -20,12 +20,12 @@ func (r *Repository) AddSubscription(ctx context.Context, newsletterId id.Newsle
 		"created_at": time.Now(),
 	}
 
-	if _, err := client.Collection("subscription_service_newsletters").Doc(newsletterId.String()).Collection("subscriptions").Doc(subscribtionId.String()).Set(ctx, storeSubscription); err != nil {
+	if _, err := client.Collection("subscription_service_newsletters").Doc(newsletterId.String()).Collection("subscriptions").Doc(subscriptionId.String()).Set(ctx, storeSubscription); err != nil {
 		return nil, err
 	}
 
 	subscription := svcmodel.Subscription{
-		ID:           subscribtionId,
+		ID:           subscriptionId,
 		NewsletterID: newsletterId,
 		CreatedAt:    storeSubscription["created_at"].(time.Time),
 		Email:        email,
@@ -34,9 +34,9 @@ func (r *Repository) AddSubscription(ctx context.Context, newsletterId id.Newsle
 	return &subscription, nil
 }
 
-func (r *Repository) DeleteSubscription(ctx context.Context, newsletterId id.Newsletter, subscribtionId id.Subscription) error {
+func (r *Repository) DeleteSubscription(ctx context.Context, newsletterId string, subscriptionId string) error {
 	client := r.client
-	_, err := client.Collection("subscription_service_newsletters").Doc(newsletterId.String()).Collection("subscriptions").Doc(subscribtionId.String()).Delete(ctx)
+	_, err := client.Collection("subscription_service_newsletters").Doc(newsletterId).Collection("subscriptions").Doc(subscriptionId).Delete(ctx)
 	if err != nil {
 		return err
 	}

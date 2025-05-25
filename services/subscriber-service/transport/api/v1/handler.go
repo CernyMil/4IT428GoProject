@@ -21,18 +21,14 @@ func NewHandler(
 func (h *Handler) initRouter() {
 	r := chi.NewRouter()
 
-	// TODO: Setup middleware.
-
 	r.Route("/newsletters/{newsletterId}", func(r chi.Router) {
-		r.Post("/subscribe", h.SubscribeToNewsletter)
-		r.Delete("/unsubscribe", h.UnsubscribeFromNewsletter)
-		r.Get("/confirm", h.ConfirmSubscription)
 		r.Get("/posts/{postId}/publish", h.SendPublishedPost)
 		r.Delete("/delete", h.DeleteNewsletter)
 	})
-	h.Mux = r
+	r.Route("/nginx/newsletters/{newsletterId}", func(r chi.Router) {
+		r.Get("/posts/{postId}/publish", h.SendPublishedPost)
+		r.Delete("/delete", h.DeleteNewsletter)
+	})
 
-	/*r.Route("newsletters/{newsletterId}/posts", func(r chi.Router) {
-		r.Post("/", h.SendEmail)
-	})   */
+	h.Mux = r
 }
