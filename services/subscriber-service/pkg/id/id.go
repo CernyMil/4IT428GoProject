@@ -6,32 +6,85 @@ import (
 	"github.com/google/uuid"
 )
 
-type User uuid.UUID
+// Specific ID types
+type (
+	Subscription uuid.UUID
+	Newsletter   uuid.UUID
+	Subscriber   uuid.UUID
+	Post         uuid.UUID
+)
 
-func (u *User) FromString(s string) error {
+// Subscription methods
+func (s *Subscription) FromString(str string) error {
+	return fromString((*uuid.UUID)(s), str)
+}
+
+func (s Subscription) String() string {
+	return uuid.UUID(s).String()
+}
+
+func (s *Subscription) Scan(data any) error {
+	return scanUUID((*uuid.UUID)(s), "Subscription", data)
+}
+
+func (s Subscription) MarshalText() ([]byte, error) {
+	return []byte(uuid.UUID(s).String()), nil
+}
+
+func (s *Subscription) UnmarshalText(data []byte) error {
+	return unmarshalUUID((*uuid.UUID)(s), "Subscription", data)
+}
+
+// Newsletter methods
+func (n *Newsletter) FromString(str string) error {
+	return fromString((*uuid.UUID)(n), str)
+}
+
+func (n Newsletter) String() string {
+	return uuid.UUID(n).String()
+}
+
+func (n *Newsletter) Scan(data any) error {
+	return scanUUID((*uuid.UUID)(n), "Newsletter", data)
+}
+
+func (n Newsletter) MarshalText() ([]byte, error) {
+	return []byte(uuid.UUID(n).String()), nil
+}
+
+func (n *Newsletter) UnmarshalText(data []byte) error {
+	return unmarshalUUID((*uuid.UUID)(n), "Newsletter", data)
+}
+
+// Post methods
+func (p *Post) FromString(str string) error {
+	return fromString((*uuid.UUID)(p), str)
+}
+
+func (p Post) String() string {
+	return uuid.UUID(p).String()
+}
+
+func (p *Post) Scan(data any) error {
+	return scanUUID((*uuid.UUID)(p), "Post", data)
+}
+
+func (p Post) MarshalText() ([]byte, error) {
+	return []byte(uuid.UUID(p).String()), nil
+}
+
+func (p *Post) UnmarshalText(data []byte) error {
+	return unmarshalUUID((*uuid.UUID)(p), "Post", data)
+}
+
+// Common methods for all ID types
+func fromString(u *uuid.UUID, s string) error {
 	id, err := uuid.Parse(s)
 	if err != nil {
 		return err
 	}
-
-	*u = User(id)
+	*u = uuid.UUID(id)
 	return nil
-}
-
-func (u User) String() string {
-	return uuid.UUID(u).String()
-}
-
-func (u *User) Scan(data any) error {
-	return scanUUID((*uuid.UUID)(u), "User", data)
-}
-
-func (u User) MarshalText() ([]byte, error) {
-	return []byte(uuid.UUID(u).String()), nil
-}
-
-func (u *User) UnmarshalText(data []byte) error {
-	return unmarshalUUID((*uuid.UUID)(u), "User", data)
 }
 
 func scanUUID(u *uuid.UUID, idTypeName string, data any) error {

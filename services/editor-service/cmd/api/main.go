@@ -2,70 +2,43 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"log/slog"
+	"editor-service/repository"
+	"editor-service/service"
+	transport "editor-service/transport/api/v1"
+	"editor-service/transport/middleware"
+	"log"
+	"net/http"
+	"os"
 
-	"user-management-api/service"
-	"user-management-api/transport/api"
-	"user-management-api/transport/util"
-
-	httpx "go.strv.io/net/http"
+	"github.com/go-chi/chi/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-var version = "v0.0.0"
-
 func main() {
-	ctx := context.Background()
-	cfg := MustLoadConfig()
-	util.SetServerLogLevel(slog.LevelInfo)
+	dbURL := os.Getenv("DATABASE_URL")
+	firebaseCred := "firebase-cred.json"
 
-	controller, err := setupController(
-		cfg,
-	)
+	dbpool, err := pgxpool.New(context.Background(), dbURL)
 	if err != nil {
-		slog.Error("initializing controller", slog.Any("error", err))
+		log.Fatalf("Failed to connect to DB: %v", err)
 	}
 
-	addr := fmt.Sprintf(":%d", cfg.Port)
-	// Initialize the server config.
-	serverConfig := httpx.ServerConfig{
-		Addr:    addr,
-		Handler: controller,
-		Hooks:   httpx.ServerHooks{
-			// BeforeShutdown: []httpx.ServerHookFunc{
-			// 	func(_ context.Context) {
-			// 		database.Close()
-			// 	},
-			// },
-		},
-		Limits: nil,
-		Logger: util.NewServerLogger("httpx.Server"),
-	}
-	server := httpx.NewServer(&serverConfig)
-
-	slog.Info("starting server", slog.Int("port", cfg.Port))
-	if err := server.Run(ctx); err != nil {
-		slog.Error("server failed", slog.Any("error", err))
-	}
-}
-
-func setupController(
-	_ Config,
-) (*api.Controller, error) {
-	// Initialize the service.
-	svc, err := service.NewService()
+	auth, err := middleware.NewFirebaseAuth(firebaseCred)
 	if err != nil {
-		return nil, fmt.Errorf("initializing user service: %w", err)
+		log.Fatalf("Failed to initialize Firebase: %v", err)
 	}
 
-	// Initialize the controller.
-	controller, err := api.NewController(
-		svc,
-		version,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("initializing controller: %w", err)
-	}
+	repo := repository.NewPgxEditorRepository(dbpool)
+	svc := service.NewEditorService(repo, auth)
+	handler := transport.NewEditorHandler(svc)
 
-	return controller, nil
+	r := chi.NewRouter()
+	//r.Use(middleware.Logger)
+
+	r.Post("/signup", handler.SignUp)
+	r.Post("/signin", handler.SignIn)
+	r.Post("/change-password", handler.ChangePassword)
+
+	log.Println("Server running on :8081")
+	http.ListenAndServe(":8081", r)
 }

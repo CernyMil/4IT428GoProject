@@ -33,3 +33,5 @@ go.work.sum
 .vscode/
 
 **/__debug*
+
+services/editor-service/firebase-admin-sdk.json

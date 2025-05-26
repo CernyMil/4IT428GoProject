@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
-  title: User management service
-  description: User management service allowing to manage users.
+  title: Subscriber Service
+  description: Subscriber service allowing subscriptions to newsletters and post sending.
   version: 0.0.0
 servers:
   - url: http://localhost
@@ -15,10 +15,150 @@ paths:
       summary: Check the healthiness of the service
       responses:
         "204":
-          description: It's ALIVE (a.k.a. service is up and running)
+          description: Service is operational
         "400":
           description: Invalid request
-  "/users": {
-    # TODO;
-  }
-components: {}
+
+  "/nginx/newsletters/{newsletterId}/delete":
+    delete:
+      summary: Delete a newsletter
+      operationId: DeleteNewsletter
+      parameters:
+        - name: newsletterId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Newsletter removed successfully
+        "400":
+          description: Invalid newsletterId
+
+  "/newsletters/{newsletterId}/subscribe":
+    post:
+      summary: Subscribe to a newsletter
+      operationId: SubscribeToNewsletter
+      parameters:
+        - name: newsletterId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubscribeRequest"
+      responses:
+        "200":
+          description: Subscription successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subscription"
+        "400":
+          description: Invalid input
+
+  "/newsletters/{newsletterId}/unsubscribe":
+    delete:
+      summary: Unsubscribe from a newsletter
+      operationId: UnsubscribeFromNewsletter
+      parameters:
+        - name: newsletterId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Unsubscribed successfully
+        "400":
+          description: Invalid input
+
+  "/newsletters/{newsletterId}/confirm":
+    get:
+      summary: Confirm a subscription
+      operationId: ConfirmSubscription
+      parameters:
+        - name: newsletterId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        - name: token
+          in: query
+          required: true
+          description: Token used to confirm the subscription
+          schema:
+            type: string
+  "/nginx/newsletters/{newsletterId}/posts/{postId}/publish":
+    get:
+      summary: Send published post to subscribers
+      operationId: SendPublishedPost
+      parameters:
+        - name: newsletterId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Post delivery process to subscribers has been successfully initiated
+          description: Post sent to subscribers
+        "400":
+          description: Invalid request
+
+components:
+  schemas:
+    SubscribeRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+      required:
+    UnsubscribeRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+      required:
+        - email
+        - email
+    Subscription:
+      type: object
+      properties:
+        id:
+          type: string
+        newsletterId:
+          type: string
+        email:
+        createdAt:
+          type: string
+          format: date-time
+          description: The timestamp when the subscription was created
+          format: date-time
+      required:
+        - id
+        - newsletterId
+        - email
+        - createdAt

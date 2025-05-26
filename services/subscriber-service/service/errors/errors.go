@@ -3,6 +3,6 @@ package errors
 import "errors"
 
 var (
-	ErrUserAlreadyExists = errors.New("user already exists")
-	ErrUserDoesntExists  = errors.New("user does not exist")
+	ErrEmailAlreadySubscribed = errors.New("email already subscribed to the newsletter")
+	ErrEmailNotSubscribed     = errors.New("email not subscribed to the newsletter")
 )

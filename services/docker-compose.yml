@@ -1,0 +1,57 @@
+services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - "8080:80"
+    volumes:
+       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  editor-service:
+    build:
+      context: ./editor-service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      PORT: 8081
+      DATABASE_URL: postgres://user:password@postgres:5432/mydb
+      FIREBASE_CRED: "/app/firebase-cred.json"
+  
+  subscriber-service:
+    build:
+      context: ./subscriber-service
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    environment:
+      PORT: 8083
+      SERVICE_ACCOUNT: "/app/firebase-admin-sdk.json"
+      EMAIL_ADDRESS: ""
+      BASE_URL: "http://localhost:8080"
+
+  migrate:
+    image: migrate/migrate
+    volumes:
+      - ./editor-service/repository/sql/migrations:/migrations
+    command: [
+      "-path", "/migrations",
+      "-database", "postgres://user:password@postgres:5432/mydb?sslmode=disable",
+      "-verbose",
+      "up"
+    ]
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:

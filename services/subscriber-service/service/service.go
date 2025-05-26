@@ -1,7 +1,25 @@
 package service
 
-type Service struct{}
+import (
+	"context"
+	"subscriber-api/pkg/id"
+	dbmodel "subscriber-api/repository/model"
+	svcmodel "subscriber-api/service/model"
+)
 
-func NewService() (Service, error) {
-	return Service{}, nil
+type Repository interface {
+	AddSubscription(ctx context.Context, newsletterId id.Newsletter, subscriptionId id.Subscription, email string, token string) (*svcmodel.Subscription, error)
+	DeleteSubscription(ctx context.Context, newsletterId string, subscriptionId string) error
+	GetSubscribers(ctx context.Context, newsletterId id.Newsletter) ([]dbmodel.SubscriberInfo, error)
+	DeleteNewsletter(ctx context.Context, newsletterId id.Newsletter) error
+}
+
+type Service struct {
+	repository Repository
+}
+
+func NewService(repository Repository) (Service, error) {
+	return Service{
+		repository: repository,
+	}, nil
 }

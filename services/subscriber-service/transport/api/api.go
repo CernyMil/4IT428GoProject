@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	apiv1 "user-management-api/transport/api/v1"
+	apiv1 "subscriber-api/transport/api/v1"
 
 	"github.com/go-chi/chi"
 	httpx "go.strv.io/net/http"
@@ -20,14 +20,11 @@ var OpenAPI []byte
 type Controller struct {
 	*chi.Mux
 
-	service apiv1.Service
+	service apiv1.SubscriberService
 	version string
 }
 
-func NewController(
-	service apiv1.Service,
-	version string,
-) (*Controller, error) {
+func NewController(service apiv1.SubscriberService, version string) (*Controller, error) {
 	controller := &Controller{
 		service: service,
 		version: version,
@@ -42,8 +39,6 @@ func (c *Controller) initRouter() {
 	r.Group(func(r chi.Router) {
 		// r.Use(httpx.LoggingMiddleware(util.NewServerLogger("httpx.LoggingMiddleware")))
 		// r.Use(httpx.RecoverMiddleware(util.NewServerLogger("httpx.RecoverMiddleware").WithStackTrace(slog.Level)))
-		// TODO: Add authentication middleware
-		// authenticate := middleware.Authenticate(c.logger, c.tokenParser)
 
 		v1Handler := apiv1.NewHandler(
 			c.service,
@@ -66,22 +61,14 @@ func (c *Controller) initRouter() {
 
 // TODO: Improve this handler.
 func (c *Controller) OpenAPI(w http.ResponseWriter, _ *http.Request) {
-	if err := httpx.WriteResponse(
-		w,
-		OpenAPI,
-		http.StatusOK,
-	); err != nil {
+	if err := httpx.WriteResponse(w, OpenAPI, http.StatusOK); err != nil {
 		slog.Error("writing response", slog.Any("error", err))
 	}
 }
 
 // TODO: Improve this handler.
 func (c *Controller) Version(w http.ResponseWriter, _ *http.Request) {
-	if err := httpx.WriteResponse(
-		w,
-		c.version,
-		http.StatusOK,
-	); err != nil {
+	if err := httpx.WriteResponse(w, c.version, http.StatusOK); err != nil {
 		slog.Error("writing response", slog.Any("error", err))
 	}
 }

@@ -1,16 +1,30 @@
 package model
 
-import "time"
+import (
+	"subscriber-api/pkg/id"
+	"time"
+)
 
-type User struct {
-	Email     string
-	FirstName string
-	LastName  string
-	BirthDate BirthDate
+type Subscription struct {
+	ID           id.Subscription `json:"id" validate:"required"`
+	NewsletterID id.Newsletter   `json:"newsletter_id" validate:"required"`
+	Email        string          `json:"email" validate:"email" required:"true"`
+	CreatedAt    time.Time       `json:"created_at"`
 }
 
-type BirthDate struct {
-	Day   int
-	Month time.Month
-	Year  int
+type PostHTML struct {
+	Email           string `json:"Email" validate:"required"`
+	Title           string `json:"title" validate:"required"`
+	Content         string `json:"content" validate:"required"`
+	UnsubscribeLink string `json:"unsubscribeLink" validate:"required"`
+}
+
+type SubscribeRequest struct {
+	NewsletterID id.Newsletter `json:"newsletter_id" validate:"required,uuid"`
+	Email        string        `json:"email" validate:"required,email"`
+}
+
+type UnsubscribeRequest struct {
+	NewsletterID   id.Newsletter   `json:"newsletter_id" validate:"required,uuid"`
+	SubscriptionID id.Subscription `json:"subscription_id" validate:"required,uuid"`
 }
