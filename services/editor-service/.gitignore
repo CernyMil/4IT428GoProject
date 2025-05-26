@@ -34,4 +34,4 @@ go.work.sum
 
 **/__debug*
 
-services/editor-service/firebase-cred.json
+services/editor-service/firebase-admin-sdk.json

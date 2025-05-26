@@ -4,7 +4,7 @@ import (
 	"context"
 	"editor-service/repository"
 	"editor-service/service"
-	"editor-service/transport"
+	transport "editor-service/transport/api/v1"
 	"editor-service/transport/middleware"
 	"log"
 	"net/http"
@@ -36,6 +36,8 @@ func main() {
 	//r.Use(middleware.Logger)
 
 	r.Post("/signup", handler.SignUp)
+	r.Post("/signin", handler.SignIn)
+	r.Post("/change-password", handler.ChangePassword)
 
 	log.Println("Server running on :8081")
 	http.ListenAndServe(":8081", r)
