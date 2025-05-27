@@ -48,3 +48,22 @@ func getPostId(w http.ResponseWriter, r *http.Request) id.Post {
 	}
 	return postID
 }
+
+/*
+url := fmt.Sprintf("http://subscriber-service:8083/nginx/newsletters/{newsletterId}/posts/{postId}/publish", newsletterID)
+
+    req, err := http.NewRequest(http.MethodGet, url, nil)
+    if err != nil {
+        return err
+    }
+
+    resp, err := http.DefaultClient.Do(req)
+    if err != nil {
+        return err
+    }
+    defer resp.Body.Close()
+
+    if resp.StatusCode != http.StatusOK {
+        return fmt.Errorf("subscriber-service returned status %d", resp.StatusCode)
+    }
+*/
