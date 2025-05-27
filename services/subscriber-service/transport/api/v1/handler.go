@@ -20,8 +20,9 @@ func (h *Handler) initRouter() {
 	r := chi.NewRouter()
 
 	r.Route("/newsletters/{newsletterId}", func(r chi.Router) {
-		r.Get("/posts/{postId}/publish", h.SendPublishedPost)
-		r.Delete("/delete", h.DeleteNewsletter)
+		r.Post("/subscribe", h.SubscribeToNewsletter)
+		r.Delete("/unsubscribe", h.UnsubscribeFromNewsletter)
+		r.Get("/confirm", h.ConfirmSubscription)
 	})
 	r.Route("/nginx/newsletters/{newsletterId}", func(r chi.Router) {
 		r.Get("/posts/{postId}/publish", h.SendPublishedPost)

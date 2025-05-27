@@ -124,7 +124,7 @@ func getEmail(w http.ResponseWriter, r *http.Request) string {
 
 func getNewsletterId(w http.ResponseWriter, r *http.Request) id.Newsletter {
 	var newsletterID id.Newsletter
-	if err := newsletterID.FromString(chi.URLParam(r, "id")); err != nil {
+	if err := newsletterID.FromString(chi.URLParam(r, "newsletterId")); err != nil {
 		http.Error(w, "invalid newsletter ID", http.StatusBadRequest)
 	}
 	return newsletterID
