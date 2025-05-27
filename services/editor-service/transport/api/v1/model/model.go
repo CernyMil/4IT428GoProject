@@ -8,7 +8,8 @@ type SignUpRequest struct {
 }
 
 type SignInRequest struct {
-	IDToken string `json:"id_token"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type ChangePasswordRequest struct {
