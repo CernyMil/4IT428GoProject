@@ -1,22 +1,30 @@
-FROM golang:1.24-alpine AS builder
+# Use the official Go image as the base image
+FROM golang:1.22 as builder
 
+# Set the working directory inside the container
 WORKDIR /app
 
+# Copy the Go module files and download dependencies
 COPY go.mod go.sum ./
 RUN go mod download
 
+# Copy the rest of the application source code
 COPY . .
 
-RUN go mod tidy
-RUN go build -o subscriber-service ./cmd/api
+# Build the application
+RUN go build -o newsletter-service ./cmd/api
 
-FROM alpine:latest
+# Use a minimal base image for the final container
+FROM gcr.io/distroless/base-debian11
 
-WORKDIR /app
+# Set the working directory inside the container
+WORKDIR /
 
-COPY --from=builder /app/subscriber-service .
-COPY firebase-admin-sdk.json . 
+# Copy the built binary from the builder stage
+COPY --from=builder /app/newsletter-service .
 
+# Expose the port your service listens on
 EXPOSE 8082
 
+# Command to run the application
 CMD ["./newsletter-service"]
