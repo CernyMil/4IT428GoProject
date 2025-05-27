@@ -9,12 +9,32 @@ import (
 	"os"
 	"strings"
 	"time"
+	"context"
 
 	"newsletter-management-api/repository"
+	"firebase.google.com/go"
+    "google.golang.org/api/option"
 
-	// For loading .env files
+    "newsletter-service/middleware"
+    "newsletter-service/repository"
+	
 	_ "github.com/lib/pq" // PostgreSQL driver
 )
+
+func initializeFirebase() (*firebase.App, error) {
+    credPath := os.Getenv("FIREBASE_CRED")
+    if credPath == "" {
+        log.Fatal("FIREBASE_CRED is not set in the environment variables")
+	};
+
+    opt := option.WithCredentialsFile(credPath)
+    app, err := firebase.NewApp(context.Background(), nil, opt)
+    if err != nil {
+        return nil, err
+    })))
+
+    return app, nil
+}
 
 func main() {
 	// Load environment variables from the .env file
@@ -62,6 +82,12 @@ func main() {
 	}
 	log.Println("Connected to the database successfully!")
 
+	   // Initialize Firebase
+	   firebaseApp, err := initializeFirebase()
+	   if err != nil {
+		   log.Fatalf("Failed to initialize Firebase: %v", err)
+	   }
+
 	// Initialize the repository
 	repo := repository.NewPostgresRepository(db)
 
@@ -75,7 +101,7 @@ func main() {
 
 func startServer(addr string, repo repository.Repository) error {
 	// Create and retrieve newsletters
-	http.HandleFunc("/newsletters", func(w http.ResponseWriter, r *http.Request) {
+	http.Handle("/newsletters", middleware.FirebaseAuthMiddleware(firebaseApp, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost: // Create a new newsletter
 			var n repository.Newsletter
@@ -83,6 +109,7 @@ func startServer(addr string, repo repository.Repository) error {
 				http.Error(w, "Invalid request payload", http.StatusBadRequest)
 				return
 			}
+			n.EditorID = editorID // Associate the newsletter with the editor
 			n.CreatedAt = time.Now()
 			if err := repo.Save(r.Context(), &n); err != nil {
 				http.Error(w, "Failed to create newsletter", http.StatusInternalServerError)
@@ -103,7 +130,7 @@ func startServer(addr string, repo repository.Repository) error {
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
-	})
+	}
 
 	// Retrieve, update, and delete a specific newsletter by ID
 	http.HandleFunc("/newsletters/", func(w http.ResponseWriter, r *http.Request) {
