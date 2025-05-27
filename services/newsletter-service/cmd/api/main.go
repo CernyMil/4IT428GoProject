@@ -12,15 +12,17 @@ import (
 
 	"newsletter-management-api/repository"
 
-	"github.com/joho/godotenv" // For loading .env files
-	_ "github.com/lib/pq"      // PostgreSQL driver
+	// For loading .env files
+	_ "github.com/lib/pq" // PostgreSQL driver
 )
 
 func main() {
 	// Load environment variables from the .env file
-	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found, using system environment variables")
-	}
+	/*
+		if err := godotenv.Load("../../.env"); err != nil {
+			log.Println("No .env file found, using system environment variables")
+		}
+	*/
 
 	// Get the port from the environment variables
 	port := os.Getenv("PORT")
@@ -35,7 +37,20 @@ func main() {
 	}
 
 	// Connect to the database
-	db, err := sql.Open("postgres", databaseURL)
+	var db *sql.DB
+	var err error
+
+	for i := 0; i < 10; i++ {
+		db, err = sql.Open("postgres", databaseURL)
+		if err == nil {
+			err = db.Ping()
+			if err == nil {
+				break
+			}
+		}
+		log.Println("Waiting for database to be ready...")
+		time.Sleep(3 * time.Second)
+	}
 	if err != nil {
 		log.Fatalf("Failed to connect to the database: %v", err)
 	}
