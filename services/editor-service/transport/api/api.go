@@ -1,29 +1,26 @@
 package api
 
 import (
+	v1 "editor-service/transport/api/v1"
 	"net/http"
-
-	"github.com/gin-gonic/gin"
 )
 
-// Controller struct for API endpoints
-type Controller struct{}
-
-// NewController creates a new Controller instance
-func NewController() *Controller {
-	return &Controller{}
+type Controller struct {
+	handler *v1.EditorHandler
 }
 
-// RegisterRoutes registers all API endpoints to the router
-func (c *Controller) RegisterRoutes(router *gin.Engine) {
-	api := router.Group("/api")
-	{
-		api.GET("/ping", c.Ping)
-		// Přidejte další endpointy zde
-	}
+func NewController(handler *v1.EditorHandler) *Controller {
+	return &Controller{handler: handler}
 }
 
-// Ping je ukázkový endpoint
-func (c *Controller) Ping(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, gin.H{"message": "pong"})
+func (c *Controller) SignUp(w http.ResponseWriter, r *http.Request) {
+	c.handler.SignUp(w, r)
+}
+
+func (c *Controller) SignIn(w http.ResponseWriter, r *http.Request) {
+	c.handler.SignIn(w, r)
+}
+
+func (c *Controller) ChangePassword(w http.ResponseWriter, r *http.Request) {
+	c.handler.ChangePassword(w, r)
 }

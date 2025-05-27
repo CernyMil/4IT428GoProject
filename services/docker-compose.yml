@@ -3,10 +3,14 @@ services:
     image: nginx:latest
     ports:
       - "8080:80"
+    depends_on:
+      - editor-service
+      - newsletter-service
+      - subscriber-service
     volumes:
        - ./nginx/nginx.conf:/etc/nginx/nginx.conf
 
-  postgres:
+  postgres_editor:
     image: postgres:latest
     environment:
       POSTGRES_USER: user
@@ -15,7 +19,18 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_editor_data:/var/lib/postgresql/data
+
+  postgres_newsletter:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: newsletterdatabase
+    expose:
+      - "5432:5433"
+    volumes:
+      - postgres_newsletter_data:/var/lib/postgresql/data
 
   editor-service:
     build:
@@ -32,8 +47,8 @@ services:
     build:
       context: ./subscriber-service
       dockerfile: Dockerfile
-    ports:
-      - "8083:8083"
+    expose:
+      - "8083"
     environment:
       PORT: 8083
       SERVICE_ACCOUNT: "/app/firebase-admin-sdk.json"
@@ -46,12 +61,14 @@ services:
       - ./editor-service/repository/sql/migrations:/migrations
     command: [
       "-path", "/migrations",
-      "-database", "postgres://user:password@postgres:5432/mydb?sslmode=disable",
+      "-database", "postgres://user:password@postgres_editor:5432/editordatabase?sslmode=disable",
       "-verbose",
       "up"
     ]
     depends_on:
-      - postgres
+      - postgres_editor
+      - postgres_newsletter
 
 volumes:
-  postgres_data:
+  postgres_editor_data:
+  postgres_newsletter_data:

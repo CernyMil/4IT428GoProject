@@ -4,7 +4,8 @@ import (
 	"context"
 	"editor-service/repository"
 	"editor-service/service"
-	transport "editor-service/transport/api/v1"
+	api "editor-service/transport/api"
+	v1 "editor-service/transport/api/v1"
 	"editor-service/transport/middleware"
 	"log"
 	"net/http"
@@ -16,7 +17,7 @@ import (
 
 func main() {
 	dbURL := os.Getenv("DATABASE_URL")
-	firebaseCred := "firebase-cred.json"
+	firebaseCred := os.Getenv("FIREBASE_CRED")
 
 	dbpool, err := pgxpool.New(context.Background(), dbURL)
 	if err != nil {
@@ -30,14 +31,14 @@ func main() {
 
 	repo := repository.NewPgxEditorRepository(dbpool)
 	svc := service.NewEditorService(repo, auth)
-	handler := transport.NewEditorHandler(svc)
-
+	handler := v1.NewEditorHandler(svc)
+	controller := api.NewController(handler)
 	r := chi.NewRouter()
 	//r.Use(middleware.Logger)
 
-	r.Post("/signup", handler.SignUp)
-	r.Post("/signin", handler.SignIn)
-	r.Post("/change-password", handler.ChangePassword)
+	r.Post("/signup", controller.SignUp)
+	r.Post("/signin", controller.SignIn)
+	r.Post("/change-password", controller.ChangePassword)
 
 	log.Println("Server running on :8081")
 	http.ListenAndServe(":8081", r)

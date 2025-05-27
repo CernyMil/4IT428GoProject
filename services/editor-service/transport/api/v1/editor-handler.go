@@ -40,16 +40,12 @@ func (h *EditorHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
-	email, err := h.service.VerifyIDTokenAndGetEmail(r.Context(), req.IDToken)
+	editor, err := h.service.Authenticate(r.Context(), req.Email, req.Password)
 	if err != nil {
-		http.Error(w, "Invalid ID token", http.StatusUnauthorized)
+		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
 		return
 	}
-	editor, err := h.service.GetByEmail(r.Context(), email)
-	if err != nil {
-		http.Error(w, "User not found", http.StatusNotFound)
-		return
-	}
+
 	json.NewEncoder(w).Encode(editor)
 }
 
