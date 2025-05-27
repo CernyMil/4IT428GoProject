@@ -2,70 +2,83 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
-	"log/slog"
+	"log"
+	"net/http"
+	"os"
+	"time"
 
-	"newsletter-management-api/service"
-	"newsletter-management-api/transport/api"
-	"newsletter-management-api/transport/util"
+	"newsletter-management-api/repository"
 
-	httpx "go.strv.io/net/http"
+	"github.com/joho/godotenv"
+	_ "github.com/lib/pq" // PostgreSQL driver
 )
 
-var version = "v0.0.0"
-
 func main() {
-	ctx := context.Background()
-	cfg := MustLoadConfig()
-	util.SetServerLogLevel(slog.LevelInfo)
+	// Load environment variables from the .env file.
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found, using system environment variables")
+	}
 
-	controller, err := setupController(
-		cfg,
-	)
+	// Get the port from the environment variables.
+	port := os.Getenv("PORT")
+	if port == "" {
+		log.Fatal("PORT is not set in the environment variables")
+	}
+
+	// Get the database URL from the environment variables.
+	databaseURL := os.Getenv("DATABASE_URL")
+	if databaseURL == "" {
+		log.Fatal("DATABASE_URL is not set in the environment variables")
+	}
+
+	// Connect to the database.
+	db, err := sql.Open("postgres", databaseURL)
 	if err != nil {
-		slog.Error("initializing controller", slog.Any("error", err))
+		log.Fatalf("Failed to connect to the database: %v", err)
+	}
+	defer db.Close()
+
+	// Test the database connection.
+	if err := db.Ping(); err != nil {
+		log.Fatalf("Failed to ping the database: %v", err)
+	}
+	log.Println("Connected to the database successfully!")
+
+	// Initialize the repository.
+	repo := repository.NewPostgresRepository(db)
+
+	// Example usage of the repository.
+	ctx := context.Background()
+	newsletter := &repository.Newsletter{
+		//ID:        "12",
+		Subject:   "Vinko je fajne",
+		Body:      "Daj si vínko, budeš ho potrebovať!",
+		CreatedAt: time.Now(),
+	}
+	if err := repo.Save(ctx, newsletter); err != nil {
+		log.Fatalf("Failed to save newsletter: %v", err)
 	}
 
-	addr := fmt.Sprintf(":%d", cfg.Port)
-	// Initialize the server config.
-	serverConfig := httpx.ServerConfig{
-		Addr:    addr,
-		Handler: controller,
-		Hooks:   httpx.ServerHooks{
-			// BeforeShutdown: []httpx.ServerHookFunc{
-			// 	func(_ context.Context) {
-			// 		database.Close()
-			// 	},
-			// },
-		},
-		Limits: nil,
-		Logger: util.NewServerLogger("httpx.Server"),
-	}
-	server := httpx.NewServer(&serverConfig)
+	log.Println("Newsletter saved successfully!")
 
-	slog.Info("starting server", slog.Int("port", cfg.Port))
-	if err := server.Run(ctx); err != nil {
-		slog.Error("server failed", slog.Any("error", err))
+	// Start the server.
+	addr := fmt.Sprintf(":%s", port)
+	log.Printf("Starting server on %s...", addr)
+	if err := startServer(addr); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
 	}
 }
 
-func setupController(
-	_ Config,
-) (*api.Controller, error) {
-	// Initialize the service.
-	svc, err := service.NewService()
-	if err != nil {
-		return nil, fmt.Errorf("initializing user service: %w", err)
-	}
+func startServer(addr string) error {
+	// Define a simple HTTP handler for testing.
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("Server is running!"))
+	})
 
-	// Initialize the controller.
-	controller, err := api.NewController(
-		svc,
-		version,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("initializing controller: %w", err)
-	}
-
-	return controller, nil
+	// Start the HTTP server.
+	log.Printf("Server is running on %s", addr)
+	return http.ListenAndServe(addr, nil)
 }
