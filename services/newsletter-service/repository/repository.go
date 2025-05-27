@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 )
 
@@ -24,7 +25,9 @@ type UpdateNewsletterInput struct {
 type Repository interface {
 	Save(ctx context.Context, n *Newsletter) error
 	FindAll(ctx context.Context) ([]Newsletter, error)
+	FindByID(ctx context.Context, id string) (*Newsletter, error) // New method
 	Update(ctx context.Context, id string, input UpdateNewsletterInput) (*Newsletter, error)
+	Delete(ctx context.Context, id string) error // New method
 }
 
 type postgresRepository struct {
@@ -73,4 +76,26 @@ func (r *postgresRepository) Update(ctx context.Context, id string, input Update
 		return nil, err
 	}
 	return &n, nil
+}
+
+// This method retrieves a specific newsletter by its ID:
+func (r *postgresRepository) FindByID(ctx context.Context, id string) (*Newsletter, error) {
+	query := `SELECT id, subject, body, created_at FROM newsletters WHERE id = $1`
+	row := r.db.QueryRowContext(ctx, query, id)
+
+	var n Newsletter
+	if err := row.Scan(&n.ID, &n.Subject, &n.Body, &n.CreatedAt); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("newsletter not found")
+		}
+		return nil, err
+	}
+	return &n, nil
+}
+
+// Delete removes a newsletter from the database by its ID.
+func (r *postgresRepository) Delete(ctx context.Context, id string) error {
+	query := `DELETE FROM newsletters WHERE id = $1`
+	_, err := r.db.ExecContext(ctx, query, id)
+	return err
 }
