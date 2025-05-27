@@ -16,7 +16,7 @@ import (
 
 func main() {
 	dbURL := os.Getenv("DATABASE_URL")
-	firebaseCred := "firebase-cred.json"
+	firebaseCred := "firebase-admin-sdk.json"
 
 	dbpool, err := pgxpool.New(context.Background(), dbURL)
 	if err != nil {
