@@ -42,7 +42,7 @@ func (h *Handler) SendPublishedPost(w http.ResponseWriter, r *http.Request) {
 
 func getPostId(w http.ResponseWriter, r *http.Request) id.Post {
 	var postID id.Post
-	if err := postID.FromString(chi.URLParam(r, "id")); err != nil {
+	if err := postID.FromString(chi.URLParam(r, "postId")); err != nil {
 		util.WriteErrResponse(w, http.StatusBadRequest, err)
 		return id.Post{}
 	}

@@ -19,7 +19,7 @@ func NewHandler(service SubscriberService) *Handler {
 func (h *Handler) initRouter() {
 	r := chi.NewRouter()
 
-	r.Route("newsletters/{newsletterId}", func(r chi.Router) {
+	r.Route("/newsletters/{newsletterId}", func(r chi.Router) {
 		r.Post("/subscribe", h.SubscribeToNewsletter)
 		r.Delete("/unsubscribe", h.UnsubscribeFromNewsletter)
 		r.Get("/confirm", h.ConfirmSubscription)
