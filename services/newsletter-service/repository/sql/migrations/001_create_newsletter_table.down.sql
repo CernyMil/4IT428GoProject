@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS newsletters;
+DROP TABLE IF EXISTS posts;

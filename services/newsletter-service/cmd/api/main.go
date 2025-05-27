@@ -107,49 +107,92 @@ func startServer(addr string, repo repository.Repository) error {
 
 	// Retrieve, update, and delete a specific newsletter by ID
 	http.HandleFunc("/newsletters/", func(w http.ResponseWriter, r *http.Request) {
-		id := strings.TrimPrefix(r.URL.Path, "/newsletters/")
-		if id == "" {
+		pathParts := strings.Split(strings.TrimPrefix(r.URL.Path, "/newsletters/"), "/")
+		if len(pathParts) < 1 || pathParts[0] == "" {
 			http.Error(w, "Newsletter ID is required", http.StatusBadRequest)
 			return
 		}
+		newsletterID := pathParts[0]
 
-		switch r.Method {
-		case http.MethodGet: // Retrieve a specific newsletter by ID
-			newsletter, err := repo.FindByID(r.Context(), id)
-			if err != nil {
-				http.Error(w, "Newsletter not found", http.StatusNotFound)
-				return
-			}
-			w.WriteHeader(http.StatusOK)
-			json.NewEncoder(w).Encode(newsletter)
+		if len(pathParts) == 1 { // Newsletter-specific operations
+			switch r.Method {
+			case http.MethodGet: // Retrieve a specific newsletter by ID
+				newsletter, err := repo.FindByID(r.Context(), newsletterID)
+				if err != nil {
+					http.Error(w, "Newsletter not found", http.StatusNotFound)
+					return
+				}
+				w.WriteHeader(http.StatusOK)
+				json.NewEncoder(w).Encode(newsletter)
 
-		case http.MethodPut: // Update a specific newsletter
-			var input repository.UpdateNewsletterInput
-			if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-				http.Error(w, "Invalid request payload", http.StatusBadRequest)
-				return
-			}
-			updatedNewsletter, err := repo.Update(r.Context(), id, input)
-			if err != nil {
-				http.Error(w, "Failed to update newsletter", http.StatusInternalServerError)
-				return
-			}
-			w.WriteHeader(http.StatusOK)
-			json.NewEncoder(w).Encode(updatedNewsletter)
+			case http.MethodPut: // Update a specific newsletter
+				var input repository.UpdateNewsletterInput
+				if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+					http.Error(w, "Invalid request payload", http.StatusBadRequest)
+					return
+				}
+				updatedNewsletter, err := repo.Update(r.Context(), newsletterID, input)
+				if err != nil {
+					http.Error(w, "Failed to update newsletter", http.StatusInternalServerError)
+					return
+				}
+				w.WriteHeader(http.StatusOK)
+				json.NewEncoder(w).Encode(updatedNewsletter)
 
-		case http.MethodDelete: // Delete a specific newsletter
-			if err := repo.Delete(r.Context(), id); err != nil {
-				http.Error(w, "Failed to delete newsletter", http.StatusInternalServerError)
-				return
-			}
-			w.WriteHeader(http.StatusNoContent)
+			case http.MethodDelete: // Delete a specific newsletter
+				if err := repo.Delete(r.Context(), newsletterID); err != nil {
+					http.Error(w, "Failed to delete newsletter", http.StatusInternalServerError)
+					return
+				}
+				w.WriteHeader(http.StatusNoContent)
 
-		default:
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			default:
+				http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			}
+		} else if len(pathParts) == 3 && pathParts[1] == "posts" { // Specific post operations
+			postID := pathParts[2]
+			switch r.Method {
+			case http.MethodPut: // Update a post
+				var p repository.Post
+				if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
+					http.Error(w, "Invalid request payload", http.StatusBadRequest)
+					return
+				}
+				if err := repo.UpdatePost(r.Context(), postID, &p); err != nil {
+					http.Error(w, "Failed to update post", http.StatusInternalServerError)
+					return
+				}
+				w.WriteHeader(http.StatusOK)
+				json.NewEncoder(w).Encode(p)
+
+			case http.MethodDelete: // Delete a post
+				if err := repo.DeletePost(r.Context(), postID); err != nil {
+					http.Error(w, "Failed to delete post", http.StatusInternalServerError)
+					return
+				}
+				w.WriteHeader(http.StatusNoContent)
+
+			case http.MethodPost: // Publish a post
+				if err := repo.PublishPost(r.Context(), postID); err != nil {
+					http.Error(w, "Failed to publish post", http.StatusInternalServerError)
+					return
+				}
+				w.WriteHeader(http.StatusOK)
+				json.NewEncoder(w).Encode(map[string]string{"message": "Post published successfully"})
+
+			default:
+				http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			}
+		} else {
+			http.Error(w, "Invalid URL", http.StatusBadRequest)
 		}
 	})
 
 	// Start the HTTP server
 	log.Printf("Server is running on %s", addr)
 	return http.ListenAndServe(addr, nil)
+}
+
+func atoi(newsletterID string) int {
+	panic("unimplemented")
 }

@@ -21,6 +21,16 @@ type UpdateNewsletterInput struct {
 	Body    string `json:"body"`
 }
 
+// Post represents a post entity in the database.
+type Post struct {
+	ID           int       `json:"id"`
+	NewsletterID int       `json:"newsletter_id"`
+	Title        string    `json:"title"`
+	Content      string    `json:"content"`
+	CreatedAt    time.Time `json:"created_at"`
+	Published    bool      `json:"published"`
+}
+
 // Repository defines the methods for interacting with the database.
 type Repository interface {
 	Save(ctx context.Context, n *Newsletter) error
@@ -28,6 +38,13 @@ type Repository interface {
 	FindByID(ctx context.Context, id string) (*Newsletter, error) // New method
 	Update(ctx context.Context, id string, input UpdateNewsletterInput) (*Newsletter, error)
 	Delete(ctx context.Context, id string) error // New method
+
+	// Post-related methods
+	CreatePost(ctx context.Context, p *Post) error
+	FindPostsByNewsletterID(ctx context.Context, newsletterID string) ([]Post, error)
+	UpdatePost(ctx context.Context, id string, p *Post) error
+	DeletePost(ctx context.Context, id string) error
+	PublishPost(ctx context.Context, postID string) error
 }
 
 type postgresRepository struct {
@@ -96,6 +113,49 @@ func (r *postgresRepository) FindByID(ctx context.Context, id string) (*Newslett
 // Delete removes a newsletter from the database by its ID.
 func (r *postgresRepository) Delete(ctx context.Context, id string) error {
 	query := `DELETE FROM newsletters WHERE id = $1`
+	_, err := r.db.ExecContext(ctx, query, id)
+	return err
+}
+
+func (r *postgresRepository) CreatePost(ctx context.Context, p *Post) error {
+	query := `INSERT INTO posts (newsletter_id, title, content, created_at) VALUES ($1, $2, $3, $4)`
+	_, err := r.db.ExecContext(ctx, query, p.NewsletterID, p.Title, p.Content, p.CreatedAt)
+	return err
+}
+
+func (r *postgresRepository) FindPostsByNewsletterID(ctx context.Context, newsletterID string) ([]Post, error) {
+	query := `SELECT id, newsletter_id, title, content, created_at FROM posts WHERE newsletter_id = $1 ORDER BY created_at DESC`
+	rows, err := r.db.QueryContext(ctx, query, newsletterID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var posts []Post
+	for rows.Next() {
+		var p Post
+		if err := rows.Scan(&p.ID, &p.NewsletterID, &p.Title, &p.Content, &p.CreatedAt); err != nil {
+			return nil, err
+		}
+		posts = append(posts, p)
+	}
+	return posts, nil
+}
+
+func (r *postgresRepository) UpdatePost(ctx context.Context, id string, p *Post) error {
+	query := `UPDATE posts SET title = $1, content = $2 WHERE id = $3`
+	_, err := r.db.ExecContext(ctx, query, p.Title, p.Content, id)
+	return err
+}
+
+func (r *postgresRepository) DeletePost(ctx context.Context, id string) error {
+	query := `DELETE FROM posts WHERE id = $1`
+	_, err := r.db.ExecContext(ctx, query, id)
+	return err
+}
+
+func (r *postgresRepository) PublishPost(ctx context.Context, id string) error {
+	query := `UPDATE posts SET published = TRUE WHERE id = $1`
 	_, err := r.db.ExecContext(ctx, query, id)
 	return err
 }
