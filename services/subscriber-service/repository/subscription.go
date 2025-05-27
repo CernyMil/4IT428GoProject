@@ -6,9 +6,9 @@ import (
 
 	"google.golang.org/api/iterator"
 
-	"subscriber-api/pkg/id"
-	"subscriber-api/repository/model"
-	svcmodel "subscriber-api/service/model"
+	"subscriber-service/pkg/id"
+	"subscriber-service/repository/model"
+	svcmodel "subscriber-service/service/model"
 )
 
 func (r *Repository) AddSubscription(ctx context.Context, newsletterId id.Newsletter, subscriptionId id.Subscription, email string, token string) (*svcmodel.Subscription, error) {

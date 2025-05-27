@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 
-	"subscriber-api/pkg/id"
+	"subscriber-service/pkg/id"
 )
 
 func (s Service) DeleteNewsletter(ctx context.Context, newsletterId id.Newsletter) error {

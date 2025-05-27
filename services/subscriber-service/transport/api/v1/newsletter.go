@@ -3,7 +3,7 @@ package v1
 import (
 	"net/http"
 
-	"subscriber-api/transport/util"
+	"subscriber-service/transport/util"
 )
 
 func (h *Handler) DeleteNewsletter(w http.ResponseWriter, r *http.Request) {

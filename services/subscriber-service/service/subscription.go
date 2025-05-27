@@ -7,10 +7,10 @@ import (
 
 	"github.com/google/uuid"
 
-	"subscriber-api/pkg/id"
-	token "subscriber-api/pkg/token"
-	"subscriber-api/service/mail"
-	svcmodel "subscriber-api/service/model"
+	"subscriber-service/pkg/id"
+	token "subscriber-service/pkg/token"
+	"subscriber-service/service/mail"
+	svcmodel "subscriber-service/service/model"
 )
 
 func (s Service) SubscribeToNewsletter(ctx context.Context, subReq svcmodel.SubscribeRequest) error {

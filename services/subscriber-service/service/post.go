@@ -4,9 +4,9 @@ import (
 	"context"
 	"os"
 
-	"subscriber-api/service/mail"
-	svcmodel "subscriber-api/service/model"
-	"subscriber-api/transport/api/v1/model"
+	"subscriber-service/service/mail"
+	svcmodel "subscriber-service/service/model"
+	"subscriber-service/transport/api/v1/model"
 )
 
 func (s Service) SendPublishedPost(ctx context.Context, post model.Post) error {
