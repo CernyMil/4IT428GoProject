@@ -3,10 +3,8 @@ package repository
 import (
 	"context"
 
-	"newsletter-management-api-api/pkg/id"
+	dbmodel "newsletter-management-api/repository/sql/model"
 	"newsletter-management-api/repository/sql/query"
-	"newsletter-management-api/service/model"
-	dbmodel "user-management-api/repository/sql/model"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5"
@@ -23,7 +21,7 @@ func NewUserRepository(pool *pgxpool.Pool) *UserRepository {
 	}
 }
 
-func (r *UserRepository) ReadUser(ctx context.Context, userID id.User) (*model.User, error) {
+func (r *UserRepository) ReadUser(ctx context.Context, userID string) (*dbmodel.User, error) {
 	var user dbmodel.User
 	if err := pgxscan.Get(
 		ctx,
@@ -36,10 +34,10 @@ func (r *UserRepository) ReadUser(ctx context.Context, userID id.User) (*model.U
 	); err != nil {
 		return nil, err
 	}
-	return &model.User{}, nil
+	return &user, nil
 }
 
-func (r *UserRepository) ListUser(ctx context.Context) ([]model.User, error) {
+func (r *UserRepository) ListUser(ctx context.Context) ([]dbmodel.User, error) {
 	var users []dbmodel.User
 	if err := pgxscan.Select(
 		ctx,
@@ -49,11 +47,5 @@ func (r *UserRepository) ListUser(ctx context.Context) ([]model.User, error) {
 	); err != nil {
 		return nil, err
 	}
-	response := make([]model.User, len(users))
-	for i, user := range users {
-		response[i] = model.User{
-			ID: user.ID,
-		}
-	}
-	return response, nil
+	return users, nil
 }

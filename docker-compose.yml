@@ -1,0 +1,6 @@
+services:
+  4it428goproject:
+    image: 4it428goproject
+    build:
+      context: .
+      dockerfile: ./Dockerfile
