@@ -1,6 +1,0 @@
-[build]
-context = "services/editor-service"
-dockerfile = "Dockerfile"
-
-[start]
-cmd = "./editor-service"
