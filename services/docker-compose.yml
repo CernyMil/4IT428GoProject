@@ -15,8 +15,8 @@ services:
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: editordatabase
-    expose:
+      POSTGRES_DB: mydb
+    ports:
       - "5432:5432"
     volumes:
       - postgres_editor_data:/var/lib/postgresql/data
@@ -36,26 +36,12 @@ services:
     build:
       context: ./editor-service
       dockerfile: Dockerfile
-    expose:
-      - "8081"
-    depends_on:
-      - postgres_editor
+    ports:
+      - "8081:8081"
     environment:
       PORT: 8081
-      DATABASE_URL: postgres://user:password@postgres_editor:5432/editordatabase
-      FIREBASE_CRED: "/app/firebase-admin-sdk.json"
-
-  newsletter-service:
-    build:
-      context: ./newsletter-service
-      dockerfile: Dockerfile
-    expose:
-      - "8082"
-    depends_on:
-      - postgres_newsletter
-    environment:
-      PORT: 8082
-      DATABASE_URL: postgres://user:password@postgres_newsletter:5432/newsletterdatabase?sslmode=disable
+      DATABASE_URL: postgres://user:password@postgres:5432/mydb
+      FIREBASE_CRED: "/app/firebase-cred.json"
   
   subscriber-service:
     build:

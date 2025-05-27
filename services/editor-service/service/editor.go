@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"time"
 
+	"golang.org/x/crypto/bcrypt"
+
 	"firebase.google.com/go/auth"
 )
 
@@ -30,12 +32,18 @@ func (s *EditorService) SignUp(ctx context.Context, email, password, firstName, 
 		return fmt.Errorf("firebase create user error: %w", err)
 	}
 
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return fmt.Errorf("failed to hash password: %w", err)
+	}
+
 	editor := &models.Editor{
-		ID:        uuidutil.NewUUID(),
-		Email:     userRecord.Email,
-		FirstName: firstName,
-		LastName:  lastName,
-		CreatedAt: time.Now(),
+		ID:             uuidutil.NewUUID(),
+		Email:          userRecord.Email,
+		FirstName:      firstName,
+		LastName:       lastName,
+		CreatedAt:      time.Now(),
+		HashedPassword: string(hashedPassword),
 	}
 	return s.repo.CreateEditor(ctx, editor)
 }
@@ -44,16 +52,28 @@ func (s *EditorService) GetByEmail(ctx context.Context, email string) (*models.E
 	return s.repo.GetEditorByEmail(ctx, email)
 }
 
-func (s *EditorService) VerifyIDTokenAndGetEmail(ctx context.Context, idToken string) (string, error) {
-	token, err := s.auth.Client.VerifyIDToken(ctx, idToken)
+/*
+	func (s *EditorService) VerifyIDTokenAndGetEmail(ctx context.Context, idToken string) (string, error) {
+		token, err := s.auth.Client.VerifyIDToken(ctx, idToken)
+		if err != nil {
+			return "", err
+		}
+		email, ok := token.Claims["email"].(string)
+		if !ok || email == "" {
+			return "", fmt.Errorf("email not found in token")
+		}
+		return email, nil
+	}
+*/
+func (s *EditorService) Authenticate(ctx context.Context, email, password string) (*models.Editor, error) {
+	editor, err := s.repo.GetEditorByEmail(ctx, email)
 	if err != nil {
-		return "", err
+		return nil, fmt.Errorf("user not found")
 	}
-	email, ok := token.Claims["email"].(string)
-	if !ok || email == "" {
-		return "", fmt.Errorf("email not found in token")
+	if err := bcrypt.CompareHashAndPassword([]byte(editor.HashedPassword), []byte(password)); err != nil {
+		return nil, fmt.Errorf("invalid password")
 	}
-	return email, nil
+	return editor, nil
 }
 
 func (s *EditorService) ChangePassword(ctx context.Context, email, newPassword string) error {
