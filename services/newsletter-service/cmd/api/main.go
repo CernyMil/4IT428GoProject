@@ -53,8 +53,8 @@ func main() {
 	ctx := context.Background()
 	newsletter := &repository.Newsletter{
 		//ID:        "12",
-		Subject:   "Čauky mňauky",
-		Body:      "Čauky mňauky vitaj u nas!",
+		Subject:   "Vinko je fajne",
+		Body:      "Daj si vínko, budeš ho potrebovať!",
 		CreatedAt: time.Now(),
 	}
 	if err := repo.Save(ctx, newsletter); err != nil {
