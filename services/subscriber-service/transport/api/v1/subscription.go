@@ -7,10 +7,10 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-playground/validator/v10"
 
-	"subscriber-api/pkg/id"
-	token "subscriber-api/pkg/token"
-	svcmodel "subscriber-api/service/model"
-	"subscriber-api/transport/util"
+	"subscriber-service/pkg/id"
+	token "subscriber-service/pkg/token"
+	svcmodel "subscriber-service/service/model"
+	"subscriber-service/transport/util"
 )
 
 var validate = validator.New()

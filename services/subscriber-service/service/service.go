@@ -2,9 +2,9 @@ package service
 
 import (
 	"context"
-	"subscriber-api/pkg/id"
-	dbmodel "subscriber-api/repository/model"
-	svcmodel "subscriber-api/service/model"
+	"subscriber-service/pkg/id"
+	dbmodel "subscriber-service/repository/model"
+	svcmodel "subscriber-service/service/model"
 )
 
 type Repository interface {

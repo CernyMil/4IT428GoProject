@@ -1,8 +1,6 @@
-module subscriber-api
+module subscriber-service
 
 go 1.24.0
-
-toolchain go1.24.0
 
 require (
 	cloud.google.com/go/firestore v1.18.0

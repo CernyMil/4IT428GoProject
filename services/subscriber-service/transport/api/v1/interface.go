@@ -3,9 +3,9 @@ package v1
 import (
 	"context"
 
-	"subscriber-api/pkg/id"
-	svcmodel "subscriber-api/service/model"
-	"subscriber-api/transport/api/v1/model"
+	"subscriber-service/pkg/id"
+	svcmodel "subscriber-service/service/model"
+	"subscriber-service/transport/api/v1/model"
 )
 
 type SubscriberService interface {

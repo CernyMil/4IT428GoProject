@@ -6,7 +6,7 @@ import (
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
 
-	"subscriber-api/pkg/id"
+	"subscriber-service/pkg/id"
 )
 
 func (r *Repository) DeleteNewsletter(ctx context.Context, newsletter id.Newsletter) error {

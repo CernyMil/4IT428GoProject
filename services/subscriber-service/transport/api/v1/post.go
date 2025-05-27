@@ -5,9 +5,9 @@ import (
 	"io"
 	"net/http"
 
-	"subscriber-api/pkg/id"
-	"subscriber-api/transport/api/v1/model"
-	"subscriber-api/transport/util"
+	"subscriber-service/pkg/id"
+	"subscriber-service/transport/api/v1/model"
+	"subscriber-service/transport/util"
 
 	"github.com/go-chi/chi"
 )

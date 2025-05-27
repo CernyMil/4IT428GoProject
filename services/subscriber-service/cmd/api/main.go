@@ -6,10 +6,10 @@ import (
 	"log"
 	"log/slog"
 
-	"subscriber-api/repository"
-	"subscriber-api/service"
-	"subscriber-api/transport/api"
-	"subscriber-api/transport/util"
+	"subscriber-service/repository"
+	"subscriber-service/service"
+	"subscriber-service/transport/api"
+	"subscriber-service/transport/util"
 
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"

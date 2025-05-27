@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	apiv1 "subscriber-api/transport/api/v1"
+	apiv1 "subscriber-service/transport/api/v1"
 
 	"github.com/go-chi/chi"
 	httpx "go.strv.io/net/http"
