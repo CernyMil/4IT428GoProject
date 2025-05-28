@@ -86,5 +86,12 @@ func (s *EditorService) ChangePassword(ctx context.Context, email, newPassword s
 	if err != nil {
 		return fmt.Errorf("firebase update user error: %w", err)
 	}
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return fmt.Errorf("failed to hash new password: %w", err)
+	}
+	if err := s.repo.UpdateEditorPassword(ctx, email, string(hashedPassword)); err != nil {
+		return fmt.Errorf("failed to update local password: %w", err)
+	}
 	return nil
 }

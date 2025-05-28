@@ -15,7 +15,7 @@ FROM alpine:latest
 WORKDIR /app
 
 COPY --from=builder /app/editor-service .
-
+COPY firebase-admin-sdk.json . 
 
 EXPOSE 8081
 

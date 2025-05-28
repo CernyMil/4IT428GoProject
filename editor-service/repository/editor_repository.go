@@ -10,6 +10,7 @@ import (
 type EditorRepositoryInterface interface {
 	CreateEditor(ctx context.Context, editor *models.Editor) error
 	GetEditorByEmail(ctx context.Context, email string) (*models.Editor, error)
+	UpdateEditorPassword(ctx context.Context, email string, hashedPassword string) error
 }
 
 type EditorRepository struct {
@@ -39,4 +40,10 @@ func (r *EditorRepository) GetEditorByEmail(ctx context.Context, email string) (
 	}
 
 	return &editor, nil
+}
+
+func (r *EditorRepository) UpdateEditorPassword(ctx context.Context, email, hashedPassword string) error {
+	query := `UPDATE editors SET hashed_password = $1 WHERE email = $2`
+	_, err := r.db.Exec(ctx, query, hashedPassword, email)
+	return err
 }
