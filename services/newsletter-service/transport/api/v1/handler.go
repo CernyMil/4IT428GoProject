@@ -2,195 +2,235 @@ package v1
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
-	newsletter "newsletter-service/service/model"
+	"newsletter-service/repository"
+	"newsletter-service/service/model"
+	"newsletter-service/transport/middleware"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 )
 
+// Handler handles newsletter-related HTTP requests.
+type Handler struct {
+	*chi.Mux
+
+	authenticator middleware.FirebaseAuthenticator
+	service       model.Service
+}
+
 type NewsletterHandler struct {
-	service newsletter.Service
+	repo repository.Repository
 }
 
-func NewNewsletterHandler(service newsletter.Service) *NewsletterHandler {
-	return &NewsletterHandler{service: service}
+func NewNewsletterHandler(repo repository.Repository) *NewsletterHandler {
+	return &NewsletterHandler{repo: repo}
 }
 
-func (h *NewsletterHandler) Routes() http.Handler {
+func (h *NewsletterHandler) Routes() *chi.Mux {
 	r := chi.NewRouter()
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer) // Recover from panics
-
-	// Newsletter routes
 	r.Post("/newsletters", h.createNewsletter)
 	r.Get("/newsletters", h.listNewsletters)
-	r.Put("/newsletters/{id}", h.updateNewsletter)
-
-	// Post routes
-	r.Post("/newsletters/{id}/posts", h.createPost)
-	r.Get("/newsletters/{id}/posts", h.listPosts)
-	r.Put("/newsletters/{id}/posts/{postID}", h.updatePost)
-	r.Delete("/newsletters/{id}/posts/{postID}", h.deletePost)
-
 	return r
 }
 
 func (h *NewsletterHandler) createNewsletter(w http.ResponseWriter, r *http.Request) {
-	var input newsletter.CreateNewsletterInput
+	// Implementation for creating a newsletter
+}
+
+func (h *NewsletterHandler) listNewsletters(w http.ResponseWriter, r *http.Request) {
+	// Implementation for listing newsletters
+}
+
+// NewHandler creates a new instance of Handler.
+func NewHandler(
+	authenticator middleware.FirebaseAuthenticator,
+	service model.Service,
+) *Handler {
+	h := &Handler{
+		authenticator: authenticator,
+		service:       service,
+	}
+	h.initRouter()
+	return h
+}
+
+// initRouter sets up the routes and middleware for the handler.
+func (h *Handler) initRouter() {
+	r := chi.NewRouter()
+
+	// Setup middleware
+	authenticate := h.authenticator.Authenticate
+
+	// Newsletter routes
+	r.Route("/newsletters", func(r chi.Router) {
+		r.Post("/", h.CreateNewsletter)
+		r.Get("/", h.ListNewsletters)
+		r.With(authenticate).Put("/{id}", h.UpdateNewsletter)
+		r.With(authenticate).Delete("/{id}", h.DeleteNewsletter)
+
+		// Post routes
+		r.Route("/{id}/posts", func(r chi.Router) {
+			r.Post("/", h.CreatePost)
+			r.Get("/", h.ListPosts)
+			r.With(authenticate).Put("/{postID}", h.UpdatePost)
+			r.With(authenticate).Delete("/{postID}", h.DeletePost)
+		})
+	})
+
+	h.Mux = r
+}
+
+// CreateNewsletter handles the creation of a new newsletter.
+func (h *Handler) CreateNewsletter(w http.ResponseWriter, r *http.Request) {
+	var input model.CreateNewsletterInput
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, `{"error": "invalid input"}`, http.StatusBadRequest)
 		return
 	}
 
 	n, err := h.service.CreateNewsletter(r.Context(), input)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		http.Error(w, fmt.Sprintf(`{"error": "failed to create newsletter: %v"}`, err), http.StatusBadRequest)
+		http.Error(w, `{"error": "failed to create newsletter"}`, http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	if err := json.NewEncoder(w).Encode(n); err != nil {
-		http.Error(w, `{"error": "failed to encode response"}`, http.StatusInternalServerError)
-	}
+	json.NewEncoder(w).Encode(n)
 }
 
-func (h *NewsletterHandler) listNewsletters(w http.ResponseWriter, r *http.Request) {
-	ns, err := h.service.ListNewsletters(r.Context())
+// ListNewsletters handles listing all newsletters.
+func (h *Handler) ListNewsletters(w http.ResponseWriter, r *http.Request) {
+	newsletters, err := h.service.ListNewsletters(r.Context())
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, `{"error": "failed to fetch newsletters"}`, http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(ns); err != nil {
-		http.Error(w, `{"error": "failed to encode response"}`, http.StatusInternalServerError)
-	}
+	json.NewEncoder(w).Encode(newsletters)
 }
 
-func (h *NewsletterHandler) updateNewsletter(w http.ResponseWriter, r *http.Request) {
+// UpdateNewsletter handles updating an existing newsletter.
+func (h *Handler) UpdateNewsletter(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if id == "" {
-		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, `{"error": "missing newsletter ID"}`, http.StatusBadRequest)
 		return
 	}
 
-	var input newsletter.UpdateNewsletterInput
+	var input model.UpdateNewsletterInput
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, `{"error": "invalid input"}`, http.StatusBadRequest)
 		return
 	}
 
 	n, err := h.service.UpdateNewsletter(r.Context(), id, input)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		http.Error(w, fmt.Sprintf(`{"error": "failed to update newsletter: %v"}`, err), http.StatusInternalServerError)
+		http.Error(w, `{"error": "failed to update newsletter"}`, http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(n); err != nil {
-		http.Error(w, `{"error": "failed to encode response"}`, http.StatusInternalServerError)
-	}
+	json.NewEncoder(w).Encode(n)
 }
-func (h *NewsletterHandler) createPost(w http.ResponseWriter, r *http.Request) {
-	newsletterID := chi.URLParam(r, "id")
-	if newsletterID == "" {
-		w.Header().Set("Content-Type", "application/json")
+
+// DeleteNewsletter handles deleting a newsletter.
+func (h *Handler) DeleteNewsletter(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	if id == "" {
 		http.Error(w, `{"error": "missing newsletter ID"}`, http.StatusBadRequest)
 		return
 	}
 
-	var input newsletter.CreatePostInput
+	if err := h.service.DeleteNewsletter(r.Context(), id); err != nil {
+		http.Error(w, `{"error": "failed to delete newsletter"}`, http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// CreatePost handles the creation of a new post.
+func (h *Handler) CreatePost(w http.ResponseWriter, r *http.Request) {
+	newsletterID := chi.URLParam(r, "id")
+	if newsletterID == "" {
+		http.Error(w, `{"error": "missing newsletter ID"}`, http.StatusBadRequest)
+		return
+	}
+
+	var input model.CreatePostInput
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, `{"error": "invalid input"}`, http.StatusBadRequest)
 		return
 	}
 
 	p, err := h.service.CreatePost(r.Context(), newsletterID, input)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		http.Error(w, fmt.Sprintf(`{"error": "failed to create post: %v"}`, err), http.StatusInternalServerError)
+		http.Error(w, `{"error": "failed to create post"}`, http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	if err := json.NewEncoder(w).Encode(p); err != nil {
-		http.Error(w, `{"error": "failed to encode response"}`, http.StatusInternalServerError)
-	}
+	json.NewEncoder(w).Encode(p)
 }
 
-func (h *NewsletterHandler) listPosts(w http.ResponseWriter, r *http.Request) {
+// ListPosts handles listing all posts for a specific newsletter.
+func (h *Handler) ListPosts(w http.ResponseWriter, r *http.Request) {
 	newsletterID := chi.URLParam(r, "id")
 	if newsletterID == "" {
-		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, `{"error": "missing newsletter ID"}`, http.StatusBadRequest)
 		return
 	}
 
 	posts, err := h.service.ListPosts(r.Context(), newsletterID)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, `{"error": "failed to fetch posts"}`, http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(posts); err != nil {
-		http.Error(w, `{"error": "failed to encode response"}`, http.StatusInternalServerError)
-	}
+	json.NewEncoder(w).Encode(posts)
 }
 
-func (h *NewsletterHandler) updatePost(w http.ResponseWriter, r *http.Request) {
+// UpdatePost handles updating an existing post.
+func (h *Handler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	newsletterID := chi.URLParam(r, "id")
 	postID := chi.URLParam(r, "postID")
 	if newsletterID == "" || postID == "" {
-		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, `{"error": "missing newsletter or post ID"}`, http.StatusBadRequest)
 		return
 	}
 
-	var input newsletter.UpdatePostInput
+	var input model.UpdatePostInput
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, `{"error": "invalid input"}`, http.StatusBadRequest)
 		return
 	}
 
 	p, err := h.service.UpdatePost(r.Context(), newsletterID, postID, input)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		http.Error(w, fmt.Sprintf(`{"error": "failed to update post: %v"}`, err), http.StatusInternalServerError)
+		http.Error(w, `{"error": "failed to update post"}`, http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(p); err != nil {
-		http.Error(w, `{"error": "failed to encode response"}`, http.StatusInternalServerError)
-	}
+	json.NewEncoder(w).Encode(p)
 }
-func (h *NewsletterHandler) deletePost(w http.ResponseWriter, r *http.Request) {
+
+// DeletePost handles deleting a post.
+func (h *Handler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	newsletterID := chi.URLParam(r, "id")
 	postID := chi.URLParam(r, "postID")
 	if newsletterID == "" || postID == "" {
-		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, `{"error": "missing newsletter or post ID"}`, http.StatusBadRequest)
 		return
 	}
 
 	if err := h.service.DeletePost(r.Context(), newsletterID, postID); err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		http.Error(w, fmt.Sprintf(`{"error": "failed to delete post: %v"}`, err), http.StatusInternalServerError)
+		http.Error(w, `{"error": "failed to delete post"}`, http.StatusInternalServerError)
 		return
 	}
 
