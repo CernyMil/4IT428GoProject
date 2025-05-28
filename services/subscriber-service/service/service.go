@@ -2,15 +2,16 @@ package service
 
 import (
 	"context"
-	"subscriber-api/pkg/id"
-	dbmodel "subscriber-api/repository/model"
-	svcmodel "subscriber-api/service/model"
+	"subscriber-service/pkg/id"
+	dbmodel "subscriber-service/repository/model"
+	svcmodel "subscriber-service/service/model"
 )
 
 type Repository interface {
 	AddSubscription(ctx context.Context, newsletterId id.Newsletter, subscriptionId id.Subscription, email string, token string) (*svcmodel.Subscription, error)
 	DeleteSubscription(ctx context.Context, newsletterId string, subscriptionId string) error
 	GetSubscribers(ctx context.Context, newsletterId id.Newsletter) ([]dbmodel.SubscriberInfo, error)
+	CreateNewsletter(ctx context.Context, newsletterId id.Newsletter) error
 	DeleteNewsletter(ctx context.Context, newsletterId id.Newsletter) error
 }
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -16,9 +17,15 @@ import (
 
 	firebase "firebase.google.com/go"
 	"google.golang.org/api/option"
+	firebase "firebase.google.com/go"
+	"google.golang.org/api/option"
 
 	//    "newsletter-service/middleware"
 	//"newsletter-service/repository"
+
+	"github.com/google/uuid"
+	"newsletter-service/middleware"
+	"newsletter-service/repository"
 
 	"github.com/google/uuid"
 	_ "github.com/lib/pq" // PostgreSQL driver
@@ -29,13 +36,23 @@ func initializeFirebase() (*firebase.App, error) {
 	if credPath == "" {
 		log.Fatal("FIREBASE_CRED is not set in the environment variables")
 	}
+	credPath := os.Getenv("FIREBASE_CRED")
+	if credPath == "" {
+		log.Fatal("FIREBASE_CRED is not set in the environment variables")
+	}
 
 	opt := option.WithCredentialsFile(credPath)
 	app, err := firebase.NewApp(context.Background(), nil, opt)
 	if err != nil {
 		return nil, err
 	}
+	opt := option.WithCredentialsFile(credPath)
+	app, err := firebase.NewApp(context.Background(), nil, opt)
+	if err != nil {
+		return nil, err
+	}
 
+	return app, nil
 	return app, nil
 }
 
@@ -90,6 +107,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to initialize Firebase: %v", err)
 	}
+	// Initialize Firebase
+	firebaseApp, err := initializeFirebase()
+	if err != nil {
+		log.Fatalf("Failed to initialize Firebase: %v", err)
+	}
 
 	// Initialize the repository
 	repo := repository.NewPostgresRepository(db)
@@ -112,6 +134,7 @@ func startServer(addr string, repo repository.Repository, firebaseApp *firebase.
 				http.Error(w, "Invalid request payload", http.StatusBadRequest)
 				return
 			}
+
 
 			n.ID = uuid.New().String()
 			n.EditorID = r.Context().Value("editorID").(string) // Associate the newsletter with the editor
@@ -136,6 +159,7 @@ func startServer(addr string, repo repository.Repository, firebaseApp *firebase.
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 	})))
+	})))
 
 	// Retrieve, update, and delete a specific newsletter by ID
 	http.HandleFunc("/newsletters/", func(w http.ResponseWriter, r *http.Request) {
@@ -151,6 +175,19 @@ func startServer(addr string, repo repository.Repository, firebaseApp *firebase.
 			http.Error(w, "Invalid UUID format", http.StatusBadRequest)
 			return
 		}
+		// Validate UUID format
+		if _, err := uuid.Parse(newsletterID); err != nil {
+			http.Error(w, "Invalid UUID format", http.StatusBadRequest)
+			return
+		}
+
+		newsletter, err := repo.FindByID(r.Context(), newsletterID)
+		if err != nil {
+			http.Error(w, "Newsletter not found", http.StatusNotFound)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(newsletter)
 
 		if len(pathParts) == 1 { // Newsletter-specific operations
 			switch r.Method {

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	newsletter "newsletter-management-api/service/model"
+	newsletter "newsletter-service/service/model"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"

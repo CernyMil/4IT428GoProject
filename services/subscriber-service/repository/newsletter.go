@@ -6,8 +6,22 @@ import (
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
 
-	"subscriber-api/pkg/id"
+	"subscriber-service/pkg/id"
 )
+
+func (r *Repository) CreateNewsletter(ctx context.Context, newsletterId id.Newsletter) error {
+	client := r.client
+
+	storeNewsletter := map[string]interface{}{
+		"newsletterId": newsletterId.String(),
+	}
+
+	if _, err := client.Collection("subscription_service_newsletters").Doc(newsletterId.String()).Set(ctx, storeNewsletter); err != nil {
+		return err
+	}
+
+	return nil
+}
 
 func (r *Repository) DeleteNewsletter(ctx context.Context, newsletter id.Newsletter) error {
 	client := r.client

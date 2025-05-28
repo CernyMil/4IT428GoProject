@@ -15,7 +15,7 @@ services:
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: mydb
+      POSTGRES_DB: editordatabase
     ports:
       - "5432:5432"
     volumes:
@@ -37,11 +37,22 @@ services:
       context: ./editor-service
       dockerfile: Dockerfile
     ports:
-      - "8081:8081"
+      - "8081"
     environment:
       PORT: 8081
-      DATABASE_URL: postgres://user:password@postgres:5432/mydb
-      FIREBASE_CRED: "/app/firebase-cred.json"
+      DATABASE_URL: postgres://user:password@postgres_editor:5432/editordatabase
+      FIREBASE_CRED: "/app/firebase-admin-sdk.json"
+
+  newsletter-service:
+    build:
+      context: ./newsletter-service
+      dockerfile: Dockerfile
+    ports:
+      - "8082"
+    environment:
+      PORT: 8082
+      DATABASE_URL: postgres://user:password@postgres_newsletter:5432/newsletterdatabase?sslmode=disable
+      
   
   subscriber-service:
     build:
@@ -52,10 +63,11 @@ services:
     environment:
       PORT: 8083
       SERVICE_ACCOUNT: "/app/firebase-admin-sdk.json"
-      EMAIL_ADDRESS: ""
+      EMAIL_ADDRESS: "newsletter_email_address"
+      RESEND_API_KEY: "re_37p9fSD2_FCSyR7zNE7utrW9jcs2sNcbA"
       BASE_URL: "http://localhost:8080"
 
-  migrate:
+  migrate-editor:
     image: migrate/migrate
     volumes:
       - ./editor-service/repository/sql/migrations:/migrations
@@ -67,6 +79,18 @@ services:
     ]
     depends_on:
       - postgres_editor
+
+  migrate-newsletter:
+    image: migrate/migrate
+    volumes:
+      - ./newsletter-service/repository/sql/migrations:/migrations
+    command: [
+      "-path", "/migrations",
+      "-database", "postgres://user:password@postgres_newsletter:5432/newsletterdatabase?sslmode=disable",
+      "-verbose",
+      "up"
+    ]
+    depends_on:
       - postgres_newsletter
 
 volumes:

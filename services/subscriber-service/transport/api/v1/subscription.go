@@ -7,10 +7,10 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-playground/validator/v10"
 
-	"subscriber-api/pkg/id"
-	token "subscriber-api/pkg/token"
-	svcmodel "subscriber-api/service/model"
-	"subscriber-api/transport/util"
+	"subscriber-service/pkg/id"
+	token "subscriber-service/pkg/token"
+	svcmodel "subscriber-service/service/model"
+	"subscriber-service/transport/util"
 )
 
 var validate = validator.New()
@@ -123,10 +123,18 @@ func getEmail(w http.ResponseWriter, r *http.Request) string {
 }
 
 func getNewsletterId(w http.ResponseWriter, r *http.Request) id.Newsletter {
-	var newsletterID id.Newsletter
-	if err := newsletterID.FromString(chi.URLParam(r, "id")); err != nil {
-		http.Error(w, "invalid newsletter ID", http.StatusBadRequest)
+	newsletterIdStr := chi.URLParam(r, "newsletterId")
+	if newsletterIdStr == "" {
+		http.Error(w, "missing newsletter ID", http.StatusBadRequest)
+		return id.Newsletter{}
 	}
+
+	var newsletterID id.Newsletter
+	if err := newsletterID.FromString(newsletterIdStr); err != nil {
+		util.WriteErrResponse(w, http.StatusBadRequest, errors.New("invalid newsletter ID"))
+		return id.Newsletter{}
+	}
+
 	return newsletterID
 }
 

@@ -1,8 +1,12 @@
 package newsletter
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
+	"net/http"
 	"time"
 )
 
@@ -97,6 +101,23 @@ func (s *newsletterService) CreateNewsletter(ctx context.Context, input CreateNe
 	if err := s.repo.Save(ctx, n); err != nil {
 		return nil, err
 	}
+
+	url := "http://subscriber-service:8083/api/v1/nginx/newsletters"
+	payload, err := json.Marshal(n.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(payload))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("subscriber-service returned status %d", resp.StatusCode)
+	}
+
 	return n, nil
 }
 

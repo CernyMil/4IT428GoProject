@@ -1,7 +1,7 @@
 package model
 
 import (
-	"subscriber-api/pkg/id"
+	"subscriber-service/pkg/id"
 )
 
 type Post struct {

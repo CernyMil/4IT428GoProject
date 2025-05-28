@@ -2,6 +2,7 @@ package mail
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
 	"os"
 
@@ -26,15 +27,18 @@ func SendMail(recepient []string, subject string, html string) error {
 	return nil
 }
 
-func PrepareHTML(templatePath string, data interface{}) (string, error) {
-	tmpl, err := template.ParseFiles(templatePath)
+func PrepareHTMLFromBytes(templateContent []byte, data interface{}) (string, error) {
+	// Create a new template and parse the content
+	tmpl, err := template.New("emailTemplate").Parse(string(templateContent))
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to parse template: %w", err)
 	}
 
+	// Execute the template with the provided data
 	var buf bytes.Buffer
 	if err := tmpl.Execute(&buf, data); err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to execute template: %w", err)
 	}
+
 	return buf.String(), nil
 }
