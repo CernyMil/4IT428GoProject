@@ -8,7 +8,9 @@ This project is part of the course **Vývoj mikroslužeb v jazyce Go** at the Un
 
 **2. Update your environment variables for each service and docker-compose**
 
-**3. Inside the services folder execute:**
+**3. Prepare your admin credentials files**
+
+**4. Inside the services folder execute:**
     ```
     make build
     ```
