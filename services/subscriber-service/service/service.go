@@ -11,6 +11,7 @@ type Repository interface {
 	AddSubscription(ctx context.Context, newsletterId id.Newsletter, subscriptionId id.Subscription, email string, token string) (*svcmodel.Subscription, error)
 	DeleteSubscription(ctx context.Context, newsletterId string, subscriptionId string) error
 	GetSubscribers(ctx context.Context, newsletterId id.Newsletter) ([]dbmodel.SubscriberInfo, error)
+	CreateNewsletter(ctx context.Context, newsletterId id.Newsletter) error
 	DeleteNewsletter(ctx context.Context, newsletterId id.Newsletter) error
 }
 

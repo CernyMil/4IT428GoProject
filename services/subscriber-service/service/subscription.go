@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"time"
 
@@ -73,7 +74,12 @@ func sendConfirmationRequestMail(email string, newsletterId string, token string
 	baseUrl := os.Getenv("BASE_URL")
 	confirmLink := baseUrl + "/api/v1/newsletters/" + newsletterId + "/confirm?token=" + token
 
-	html, err := mail.PrepareHTML("templates/confirmation_request.html", struct {
+	templateContent, err := templateFS_ConfReq.ReadFile("templates/confirmation_request.html")
+	if err != nil {
+		return fmt.Errorf("failed to read embedded template: %w", err)
+	}
+
+	html, err := mail.PrepareHTMLFromBytes(templateContent, struct {
 		Email       string
 		ConfirmLink string
 	}{
@@ -90,7 +96,6 @@ func sendConfirmationRequestMail(email string, newsletterId string, token string
 	}
 
 	return nil
-
 }
 
 func sendConfirmationMail(email string, newsletterId string, token string) error {
@@ -98,7 +103,12 @@ func sendConfirmationMail(email string, newsletterId string, token string) error
 	baseUrl := os.Getenv("BASE_URL")
 	unsubscribeLink := baseUrl + "/api/v1/newsletters/" + newsletterId + "/unsubscribe?token=" + token
 
-	html, err := mail.PrepareHTML("templates/confirmation_request.html", struct {
+	templateContent, err := templateFS_Conf.ReadFile("templates/confirmation_request.html")
+	if err != nil {
+		return fmt.Errorf("failed to read embedded template: %w", err)
+	}
+
+	html, err := mail.PrepareHTMLFromBytes(templateContent, struct {
 		Email           string
 		UnsubscribeLink string
 	}{

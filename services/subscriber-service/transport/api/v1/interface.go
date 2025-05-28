@@ -13,5 +13,6 @@ type SubscriberService interface {
 	ConfirmSubscription(ctx context.Context, subReq svcmodel.SubscribeRequest) (svcmodel.Subscription, error)
 	UnsubscribeFromNewsletter(ctx context.Context, unsubReq svcmodel.UnsubscribeRequest) error
 	DeleteNewsletter(ctx context.Context, newsletterId id.Newsletter) error
+	CreateNewsletter(ctx context.Context, newsletterId id.Newsletter) error
 	SendPublishedPost(ctx context.Context, post model.Post) error
 }

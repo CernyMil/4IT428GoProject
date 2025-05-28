@@ -63,7 +63,8 @@ services:
     environment:
       PORT: 8083
       SERVICE_ACCOUNT: "/app/firebase-admin-sdk.json"
-      EMAIL_ADDRESS: ""
+      EMAIL_ADDRESS: "newsletter_email_address"
+      RESEND_API_KEY: "re_37p9fSD2_FCSyR7zNE7utrW9jcs2sNcbA"
       BASE_URL: "http://localhost:8080"
 
   migrate-editor:
