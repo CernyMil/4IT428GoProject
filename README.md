@@ -28,8 +28,7 @@ Project is divided into multiple services, each service is in its own directory.
     .
     └── services/
         ├── nginx/
-        │   ├── nginx.conf
-        │   └── Dockerfile
+        │   └── nginx.conf
         ├── editor-service/
         │   ├── .env
         │   ├── Dockerfile
