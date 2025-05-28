@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -18,6 +19,7 @@ import (
 func main() {
 	dbURL := os.Getenv("DATABASE_URL")
 	firebaseCred := os.Getenv("FIREBASE_CRED")
+	firebaseCred = strings.ReplaceAll(cred, `\\n`, "\n")
 
 	dbpool, err := pgxpool.New(context.Background(), dbURL)
 	if err != nil {
