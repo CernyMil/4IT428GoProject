@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -9,40 +10,41 @@ import (
 	"os"
 	"strings"
 	"time"
-	"context"
 
+	"newsletter-management-api/middleware"
 	"newsletter-management-api/repository"
-	"firebase.google.com/go"
-    "google.golang.org/api/option"
 
-    "newsletter-service/middleware"
-    "newsletter-service/repository"
-	
-	_ "github.com/lib/pq" // PostgreSQL driver
+	firebase "firebase.google.com/go"
+	"google.golang.org/api/option"
+
+	//    "newsletter-service/middleware"
+	//"newsletter-service/repository"
+
 	"github.com/google/uuid"
+	_ "github.com/lib/pq" // PostgreSQL driver
 )
 
 func initializeFirebase() (*firebase.App, error) {
-    credPath := os.Getenv("FIREBASE_CRED")
-    if credPath == "" {
-        log.Fatal("FIREBASE_CRED is not set in the environment variables")
-	};
+	credPath := os.Getenv("FIREBASE_CRED")
+	if credPath == "" {
+		log.Fatal("FIREBASE_CRED is not set in the environment variables")
+	}
 
-    opt := option.WithCredentialsFile(credPath)
-    app, err := firebase.NewApp(context.Background(), nil, opt)
-    if err != nil {
-        return nil, err
-    })))
+	opt := option.WithCredentialsFile(credPath)
+	app, err := firebase.NewApp(context.Background(), nil, opt)
+	if err != nil {
+		return nil, err
+	}
 
-    return app, nil
+	return app, nil
 }
 
 func main() {
 	// Load environment variables from the .env file
 	/*
-		if err := godotenv.Load("../../.env"); err != nil {
-			log.Println("No .env file found, using system environment variables")
-		}
+	   if err := godotenv.Load("../../.env"); err != nil {
+	       log.Println("No .env file found, using system environment variables")
+	   }
 	*/
 
 	// Get the port from the environment variables
@@ -83,11 +85,11 @@ func main() {
 	}
 	log.Println("Connected to the database successfully!")
 
-	   // Initialize Firebase
-	   firebaseApp, err := initializeFirebase()
-	   if err != nil {
-		   log.Fatalf("Failed to initialize Firebase: %v", err)
-	   }
+	// Initialize Firebase
+	firebaseApp, err := initializeFirebase()
+	if err != nil {
+		log.Fatalf("Failed to initialize Firebase: %v", err)
+	}
 
 	// Initialize the repository
 	repo := repository.NewPostgresRepository(db)
@@ -95,12 +97,12 @@ func main() {
 	// Start the server
 	addr := fmt.Sprintf(":%s", port)
 	log.Printf("Starting server on %s...", addr)
-	if err := startServer(addr, repo); err != nil {
+	if err := startServer(addr, repo, firebaseApp); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 }
 
-func startServer(addr string, repo repository.Repository) error {
+func startServer(addr string, repo repository.Repository, firebaseApp *firebase.App) error {
 	// Create and retrieve newsletters
 	http.Handle("/newsletters", middleware.FirebaseAuthMiddleware(firebaseApp, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
@@ -110,9 +112,9 @@ func startServer(addr string, repo repository.Repository) error {
 				http.Error(w, "Invalid request payload", http.StatusBadRequest)
 				return
 			}
-		
+
 			n.ID = uuid.New().String()
-			n.EditorID = editorID // Associate the newsletter with the editor
+			n.EditorID = r.Context().Value("editorID").(string) // Associate the newsletter with the editor
 			n.CreatedAt = time.Now()
 			if err := repo.Save(r.Context(), &n); err != nil {
 				http.Error(w, "Failed to create newsletter", http.StatusInternalServerError)
@@ -133,7 +135,7 @@ func startServer(addr string, repo repository.Repository) error {
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
-	}
+	})))
 
 	// Retrieve, update, and delete a specific newsletter by ID
 	http.HandleFunc("/newsletters/", func(w http.ResponseWriter, r *http.Request) {
@@ -143,20 +145,12 @@ func startServer(addr string, repo repository.Repository) error {
 			return
 		}
 		newsletterID := pathParts[0]
-		    // Validate UUID format
-			if _, err := uuid.Parse(newsletterID); err != nil {
-				http.Error(w, "Invalid UUID format", http.StatusBadRequest)
-				return
-			}
-		
-			newsletter, err := repo.FindByID(r.Context(), newsletterID)
-			if err != nil {
-				http.Error(w, "Newsletter not found", http.StatusNotFound)
-				return
-			}
-			w.WriteHeader(http.StatusOK)
-			json.NewEncoder(w).Encode(newsletter)
-		})
+
+		// Validate UUID format
+		if _, err := uuid.Parse(newsletterID); err != nil {
+			http.Error(w, "Invalid UUID format", http.StatusBadRequest)
+			return
+		}
 
 		if len(pathParts) == 1 { // Newsletter-specific operations
 			switch r.Method {
@@ -235,8 +229,4 @@ func startServer(addr string, repo repository.Repository) error {
 	// Start the HTTP server
 	log.Printf("Server is running on %s", addr)
 	return http.ListenAndServe(addr, nil)
-}
-
-func atoi(newsletterID string) int {
-	panic("unimplemented")
 }
