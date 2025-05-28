@@ -19,6 +19,7 @@ import (
     "newsletter-service/repository"
 	
 	_ "github.com/lib/pq" // PostgreSQL driver
+	"github.com/google/uuid"
 )
 
 func initializeFirebase() (*firebase.App, error) {
@@ -109,6 +110,8 @@ func startServer(addr string, repo repository.Repository) error {
 				http.Error(w, "Invalid request payload", http.StatusBadRequest)
 				return
 			}
+		
+			n.ID = uuid.New().String()
 			n.EditorID = editorID // Associate the newsletter with the editor
 			n.CreatedAt = time.Now()
 			if err := repo.Save(r.Context(), &n); err != nil {
@@ -140,6 +143,20 @@ func startServer(addr string, repo repository.Repository) error {
 			return
 		}
 		newsletterID := pathParts[0]
+		    // Validate UUID format
+			if _, err := uuid.Parse(newsletterID); err != nil {
+				http.Error(w, "Invalid UUID format", http.StatusBadRequest)
+				return
+			}
+		
+			newsletter, err := repo.FindByID(r.Context(), newsletterID)
+			if err != nil {
+				http.Error(w, "Newsletter not found", http.StatusNotFound)
+				return
+			}
+			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode(newsletter)
+		})
 
 		if len(pathParts) == 1 { // Newsletter-specific operations
 			switch r.Method {
