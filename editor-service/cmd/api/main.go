@@ -19,7 +19,7 @@ import (
 func main() {
 	dbURL := os.Getenv("DATABASE_URL")
 	firebaseCred := os.Getenv("FIREBASE_CRED")
-	firebaseCred = strings.ReplaceAll(cred, `\\n`, "\n")
+	firebaseCred = strings.ReplaceAll(firebaseCred, `\\n`, "\n")
 
 	dbpool, err := pgxpool.New(context.Background(), dbURL)
 	if err != nil {
