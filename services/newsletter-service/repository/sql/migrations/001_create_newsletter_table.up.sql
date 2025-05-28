@@ -1,7 +1,7 @@
 
 -- Create newsletters table
 CREATE TABLE IF NOT EXISTS newsletters (
-    id SERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     subject VARCHAR(255) NOT NULL,
     body TEXT NOT NULL,
     created_at TIMESTAMP NOT NULL
@@ -16,3 +16,4 @@ CREATE TABLE IF NOT EXISTS posts (
     created_at TIMESTAMP NOT NULL,
     published BOOLEAN DEFAULT FALSE
 );
+

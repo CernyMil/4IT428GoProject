@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"time"
 )
 
@@ -58,8 +57,8 @@ func NewPostgresRepository(db *sql.DB) Repository {
 
 // Save inserts a new newsletter into the database.
 func (r *postgresRepository) Save(ctx context.Context, n *Newsletter) error {
-	query := `INSERT INTO newsletters (subject, body, created_at) VALUES ($1, $2, $3)`
-	_, err := r.db.ExecContext(ctx, query, n.Subject, n.Body, n.CreatedAt)
+	query := `INSERT INTO newsletters (id, subject, body, created_at) VALUES ($1, $2, $3, $4)`
+	_, err := r.db.ExecContext(ctx, query, n.ID, n.Subject, n.Body, n.CreatedAt)
 	return err
 }
 
@@ -102,9 +101,6 @@ func (r *postgresRepository) FindByID(ctx context.Context, id string) (*Newslett
 
 	var n Newsletter
 	if err := row.Scan(&n.ID, &n.Subject, &n.Body, &n.CreatedAt); err != nil {
-		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("newsletter not found")
-		}
 		return nil, err
 	}
 	return &n, nil
