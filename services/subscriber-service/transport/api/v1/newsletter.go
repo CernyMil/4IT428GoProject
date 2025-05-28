@@ -36,7 +36,7 @@ func (h *Handler) CreateNewsletter(w http.ResponseWriter, r *http.Request) {
 }
 
 /*
-   url := "http://subscriber-service:8083/nginx/newsletters"
+   url := "http://subscriber-service:8083/api/v1/nginx/newsletters"
    payload, err := json.Marshal(newsletterId)
    if err != nil {
        return err
@@ -66,7 +66,7 @@ func (h *Handler) DeleteNewsletter(w http.ResponseWriter, r *http.Request) {
 }
 
 /*
-url := fmt.Sprintf("http://subscriber-service:8083/nginx/newsletters/%s/delete", newsletterID)
+url := fmt.Sprintf("http://subscriber-service:8083/api/v1/nginx/newsletters/%s/delete", newsletterID)
 
     req, err := http.NewRequest(http.MethodDelete, url, nil)
     if err != nil {
