@@ -10,8 +10,7 @@ This project is part of the course **Vývoj mikroslužeb v jazyce Go** at the Un
     cd 4IT428GoProject
     ```
 
-**2. Update you environment variables in each service and docker-compose**
-
+**2. Update your environment variables for each service and docker-compose**
 
 **3. Inside the services folder execute:**
     ```
