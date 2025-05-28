@@ -4,16 +4,16 @@ This project is part of the course **Vývoj mikroslužeb v jazyce Go** at the Un
 
 ## How to run?
 
-**Clone the repository:**
+1. **Clone the repository:**
     ```bash
     git clone <repository-url>
     cd 4IT428GoProject
     ```
 
-**Update you environment variables in each service and docker-compose**
+2. **Update you environment variables in each service and docker-compose**
 
 
-**Inside the services folder execute:**
+3. **Inside the services folder execute:**
 
     ```
     make build
