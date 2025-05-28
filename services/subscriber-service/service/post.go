@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"subscriber-service/service/mail"
@@ -16,9 +17,14 @@ func (s Service) SendPublishedPost(ctx context.Context, post model.Post) error {
 	}
 	baseUrl := os.Getenv("BASE_URL")
 
-	for _, info := range subscriberInfo {
+	// Read the embedded template once (more efficient)
+	templateContent, err := templateFS_NewsPost.ReadFile("templates/newsletter_post.html")
+	if err != nil {
+		return fmt.Errorf("failed to read newsletter post template: %w", err)
+	}
 
-		html, err := mail.PrepareHTML("templates/newsletter_post.html", svcmodel.PostHTML{
+	for _, info := range subscriberInfo {
+		html, err := mail.PrepareHTMLFromBytes(templateContent, svcmodel.PostHTML{
 			Email:           info.Email,
 			Title:           post.Title,
 			Content:         post.Body,
@@ -26,11 +32,11 @@ func (s Service) SendPublishedPost(ctx context.Context, post model.Post) error {
 		})
 
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to prepare email for %s: %w", info.Email, err)
 		}
 
 		if err := mail.SendMail([]string{info.Email}, post.Title, html); err != nil {
-			return err
+			return fmt.Errorf("failed to send email to %s: %w", info.Email, err)
 		}
 	}
 
