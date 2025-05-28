@@ -2,6 +2,7 @@
 
 This project is part of the course **Vývoj mikroslužeb v jazyce Go** at the University of Economics, Prague.
 
+## How to run?
 
 **Clone the repository:**
     ```bash
@@ -14,7 +15,7 @@ This project is part of the course **Vývoj mikroslužeb v jazyce Go** at the Un
 
 **Inside the services folder execute:**
 
-    ```bash
+    ```
     make build
     ```
 
@@ -27,38 +28,39 @@ Project is divided into multiple services, each service is in its own directory.
 - newsletter-service: handles CRUD operations for newsletters and posts
 - subscriber-service: handles subscriptions and sending of published posts to subscribers
 
-
-.
-└── services/
-    ├── nginx/
-    │   ├── nginx.conf
-    │   └── Dockerfile
-    ├── editor-service/
-    │   ├── .env
-    │   ├── Dockerfile
-    │   ├── firebase-admin-sdk.json
-    │   ├── cmd/
-    │   ├── pkg/
-    │   ├── models/
-    │   ├── repository/
-    │   ├── service/
-    │   └── transport/
-    ├── newsletter-service/
-    │   ├── .env
-    │   ├── Dockerfile
-    │   ├── firebase-admin-sdk.json
-    │   ├── cmd/
-    │   ├── middleware/
-    │   ├── repository/
-    │   ├── service/
-    │   └── transport/
-    ├── subscriber-service/
-    │   ├── .env
-    │   ├── Dockerfile
-    │   ├── firebase-admin-sdk.json
-    │   ├── cmd/
-    │   ├── pkg/
-    │   ├── repository/
-    │   ├── service/
-    │   └── transport/
-    └── docker-compose.yaml
+    ```
+    .
+    └── services/
+        ├── nginx/
+        │   ├── nginx.conf
+        │   └── Dockerfile
+        ├── editor-service/
+        │   ├── .env
+        │   ├── Dockerfile
+        │   ├── firebase-admin-sdk.json
+        │   ├── cmd/
+        │   ├── pkg/
+        │   ├── models/
+        │   ├── repository/
+        │   ├── service/
+        │   └── transport/
+        ├── newsletter-service/
+        │   ├── .env
+        │   ├── Dockerfile
+        │   ├── firebase-admin-sdk.json
+        │   ├── cmd/
+        │   ├── middleware/
+        │   ├── repository/
+        │   ├── service/
+        │   └── transport/
+        ├── subscriber-service/
+        │   ├── .env
+        │   ├── Dockerfile
+        │   ├── firebase-admin-sdk.json
+        │   ├── cmd/
+        │   ├── pkg/
+        │   ├── repository/
+        │   ├── service/
+        │   └── transport/
+        └── docker-compose.yaml
+    ```
