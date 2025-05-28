@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -11,9 +12,18 @@ import (
 	"strings"
 	"time"
 
+	"newsletter-management-api/middleware"
+	"newsletter-management-api/repository"
+
+	firebase "firebase.google.com/go"
+	"google.golang.org/api/option"
 	firebase "firebase.google.com/go"
 	"google.golang.org/api/option"
 
+	//    "newsletter-service/middleware"
+	//"newsletter-service/repository"
+
+	"github.com/google/uuid"
 	"newsletter-service/middleware"
 	"newsletter-service/repository"
 
@@ -26,7 +36,16 @@ func initializeFirebase() (*firebase.App, error) {
 	if credPath == "" {
 		log.Fatal("FIREBASE_CRED is not set in the environment variables")
 	}
+	credPath := os.Getenv("FIREBASE_CRED")
+	if credPath == "" {
+		log.Fatal("FIREBASE_CRED is not set in the environment variables")
+	}
 
+	opt := option.WithCredentialsFile(credPath)
+	app, err := firebase.NewApp(context.Background(), nil, opt)
+	if err != nil {
+		return nil, err
+	}
 	opt := option.WithCredentialsFile(credPath)
 	app, err := firebase.NewApp(context.Background(), nil, opt)
 	if err != nil {
@@ -34,14 +53,15 @@ func initializeFirebase() (*firebase.App, error) {
 	}
 
 	return app, nil
+	return app, nil
 }
 
 func main() {
 	// Load environment variables from the .env file
 	/*
-		if err := godotenv.Load("../../.env"); err != nil {
-			log.Println("No .env file found, using system environment variables")
-		}
+	   if err := godotenv.Load("../../.env"); err != nil {
+	       log.Println("No .env file found, using system environment variables")
+	   }
 	*/
 
 	// Get the port from the environment variables
@@ -87,6 +107,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to initialize Firebase: %v", err)
 	}
+	// Initialize Firebase
+	firebaseApp, err := initializeFirebase()
+	if err != nil {
+		log.Fatalf("Failed to initialize Firebase: %v", err)
+	}
 
 	// Initialize the repository
 	repo := repository.NewPostgresRepository(db)
@@ -94,12 +119,12 @@ func main() {
 	// Start the server
 	addr := fmt.Sprintf(":%s", port)
 	log.Printf("Starting server on %s...", addr)
-	if err := startServer(addr, repo); err != nil {
+	if err := startServer(addr, repo, firebaseApp); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 }
 
-func startServer(addr string, repo repository.Repository) error {
+func startServer(addr string, repo repository.Repository, firebaseApp *firebase.App) error {
 	// Create and retrieve newsletters
 	http.Handle("/newsletters", middleware.FirebaseAuthMiddleware(firebaseApp, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
@@ -110,8 +135,9 @@ func startServer(addr string, repo repository.Repository) error {
 				return
 			}
 
+
 			n.ID = uuid.New().String()
-			n.EditorID = editorID // Associate the newsletter with the editor
+			n.EditorID = r.Context().Value("editorID").(string) // Associate the newsletter with the editor
 			n.CreatedAt = time.Now()
 			if err := repo.Save(r.Context(), &n); err != nil {
 				http.Error(w, "Failed to create newsletter", http.StatusInternalServerError)
@@ -133,6 +159,7 @@ func startServer(addr string, repo repository.Repository) error {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 	})))
+	})))
 
 	// Retrieve, update, and delete a specific newsletter by ID
 	http.HandleFunc("/newsletters/", func(w http.ResponseWriter, r *http.Request) {
@@ -142,6 +169,12 @@ func startServer(addr string, repo repository.Repository) error {
 			return
 		}
 		newsletterID := pathParts[0]
+
+		// Validate UUID format
+		if _, err := uuid.Parse(newsletterID); err != nil {
+			http.Error(w, "Invalid UUID format", http.StatusBadRequest)
+			return
+		}
 		// Validate UUID format
 		if _, err := uuid.Parse(newsletterID); err != nil {
 			http.Error(w, "Invalid UUID format", http.StatusBadRequest)
@@ -233,8 +266,4 @@ func startServer(addr string, repo repository.Repository) error {
 	// Start the HTTP server
 	log.Printf("Server is running on %s", addr)
 	return http.ListenAndServe(addr, nil)
-}
-
-func atoi(newsletterID string) int {
-	panic("unimplemented")
 }
