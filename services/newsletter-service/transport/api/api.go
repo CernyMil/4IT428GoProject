@@ -3,8 +3,8 @@ package api
 import (
 	"net/http"
 
-	newsletter "newsletter-management-api/service/model"
-	v1 "newsletter-management-api/transport/api/v1"
+	newsletter "newsletter-service/service/model"
+	v1 "newsletter-service/transport/api/v1"
 
 	"github.com/go-chi/chi/v5"
 )
