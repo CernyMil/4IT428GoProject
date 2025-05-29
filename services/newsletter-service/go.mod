@@ -3,7 +3,6 @@ module newsletter-service
 go 1.24
 
 require (
-	github.com/google/uuid v1.6.0
 	github.com/lib/pq v1.10.2
 	google.golang.org/api v0.234.0
 )
@@ -27,13 +26,18 @@ require (
 	github.com/envoyproxy/go-control-plane/envoy v1.32.4 // indirect
 	github.com/envoyproxy/protoc-gen-validate v1.2.1 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
 	github.com/go-jose/go-jose/v4 v4.0.4 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
+	github.com/go-playground/locales v0.14.1 // indirect
+	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.6 // indirect
 	github.com/googleapis/gax-go/v2 v2.14.2 // indirect
+	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
 	github.com/spiffe/go-spiffe/v2 v2.5.0 // indirect
 	github.com/zeebo/errs v1.4.0 // indirect
@@ -62,6 +66,9 @@ require (
 require (
 	firebase.google.com/go v3.13.0+incompatible
 	github.com/go-chi/chi/v5 v5.2.1
+	github.com/go-playground/validator/v10 v10.26.0
+	github.com/joho/godotenv v1.5.1
+	go.strv.io/env v0.1.0
 	golang.org/x/crypto v0.38.0 // indirect
 	golang.org/x/text v0.25.0 // indirect
 )

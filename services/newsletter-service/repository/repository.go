@@ -12,6 +12,7 @@ type Newsletter struct {
 	Subject   string    `json:"subject"`
 	Body      string    `json:"body"`
 	CreatedAt time.Time `json:"created_at"`
+	EditorID  string    `json:"editor_id"`
 }
 
 // UpdateNewsletterInput represents the input for updating a newsletter.
