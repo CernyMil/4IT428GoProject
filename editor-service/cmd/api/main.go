@@ -10,7 +10,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -19,14 +18,13 @@ import (
 func main() {
 	dbURL := os.Getenv("DATABASE_URL")
 	firebaseCred := os.Getenv("FIREBASE_CRED")
-	firebaseCred = strings.ReplaceAll(firebaseCred, `\\n`, "\n")
-
+	firebaseAPIKey := os.Getenv("FIREBASE_API_KEY")
 	dbpool, err := pgxpool.New(context.Background(), dbURL)
 	if err != nil {
 		log.Fatalf("Failed to connect to DB: %v", err)
 	}
 
-	auth, err := middleware.NewFirebaseAuth(firebaseCred)
+	auth, err := middleware.NewFirebaseAuth(firebaseCred, firebaseAPIKey)
 	if err != nil {
 		log.Fatalf("Failed to initialize Firebase: %v", err)
 	}
