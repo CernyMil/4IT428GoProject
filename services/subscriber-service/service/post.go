@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"embed"
 	"fmt"
 	"os"
 
@@ -9,6 +10,9 @@ import (
 	svcmodel "subscriber-service/service/model"
 	"subscriber-service/transport/api/v1/model"
 )
+
+//go:embed templates/newsletter_post.html
+var templateFS_NewsPost embed.FS
 
 func (s Service) SendPublishedPost(ctx context.Context, post model.Post) error {
 	subscriberInfo, err := s.repository.GetSubscribers(ctx, post.NewsletterID)

@@ -16,10 +16,9 @@ func GenerateJWT(claimsMap map[string]interface{}, expiresIn time.Duration) (str
 	for k, v := range claimsMap {
 		claims[k] = v
 	}
-	if expiresIn > 0 {
+	if expiresIn != -1 {
 		claims["exp"] = time.Now().Add(expiresIn).Unix()
 	}
-	claims["exp"] = time.Now().Add(expiresIn).Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(jwtSecret)
 }

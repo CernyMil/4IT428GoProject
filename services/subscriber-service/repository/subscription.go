@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"time"
 
 	"google.golang.org/api/iterator"
 
@@ -11,32 +10,31 @@ import (
 	svcmodel "subscriber-service/service/model"
 )
 
-func (r *Repository) AddSubscription(ctx context.Context, newsletterId id.Newsletter, subscriptionId id.Subscription, email string, token string) (*svcmodel.Subscription, error) {
+func (r *Repository) AddSubscription(ctx context.Context, subscription svcmodel.Subscription) error {
 	client := r.client
+
+	newsletterIdStr := subscription.NewsletterID.String()
+	subscriptionIdStr := subscription.ID.String()
 
 	storeSubscription := map[string]interface{}{
-		"email":      email,
-		"token":      token,
-		"created_at": time.Now(),
+		"email":      subscription.Email,
+		"token":      subscription.Token,
+		"created_at": subscription.CreatedAt,
 	}
 
-	if _, err := client.Collection("subscription_service_newsletters").Doc(newsletterId.String()).Collection("subscriptions").Doc(subscriptionId.String()).Set(ctx, storeSubscription); err != nil {
-		return nil, err
+	if _, err := client.Collection("subscription_service_newsletters").Doc(newsletterIdStr).Collection("subscriptions").Doc(subscriptionIdStr).Set(ctx, storeSubscription); err != nil {
+		return err
 	}
 
-	subscription := svcmodel.Subscription{
-		ID:           subscriptionId,
-		NewsletterID: newsletterId,
-		CreatedAt:    storeSubscription["created_at"].(time.Time),
-		Email:        email,
-	}
-
-	return &subscription, nil
+	return nil
 }
 
-func (r *Repository) DeleteSubscription(ctx context.Context, newsletterId string, subscriptionId string) error {
+func (r *Repository) DeleteSubscription(ctx context.Context, unsubReq svcmodel.UnsubscribeRequest) error {
+	newsletterIdStr := unsubReq.NewsletterID.String()
+	subscriptionIdStr := unsubReq.SubscriptionID.String()
+
 	client := r.client
-	_, err := client.Collection("subscription_service_newsletters").Doc(newsletterId).Collection("subscriptions").Doc(subscriptionId).Delete(ctx)
+	_, err := client.Collection("subscription_service_newsletters").Doc(newsletterIdStr).Collection("subscriptions").Doc(subscriptionIdStr).Delete(ctx)
 	if err != nil {
 		return err
 	}

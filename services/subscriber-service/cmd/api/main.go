@@ -6,6 +6,7 @@ import (
 	"log"
 	"log/slog"
 
+	"subscriber-service/cmd/api/config"
 	"subscriber-service/repository"
 	"subscriber-service/service"
 	"subscriber-service/transport/api"
@@ -21,7 +22,7 @@ var version = "v0.0.0"
 
 func main() {
 	ctx := context.Background()
-	cfg := MustLoadConfig()
+	cfg := config.MustLoadConfig()
 	util.SetServerLogLevel(slog.LevelInfo)
 
 	firestoreClient, err := initializeFirebase(cfg)
@@ -66,7 +67,7 @@ func main() {
 	}
 }
 
-func initializeFirebase(cfg Config) (*firestore.Client, error) {
+func initializeFirebase(cfg config.Config) (*firestore.Client, error) {
 	// Use a service account
 
 	ctx := context.Background()
@@ -82,19 +83,9 @@ func initializeFirebase(cfg Config) (*firestore.Client, error) {
 	}
 
 	return client, nil
-	/*
-		ctx := context.Background()
-		ProjectID := os.Getenv("FIREBASE_PROJECT_ID")
-		conf := &firebase.Config{ProjectID: ProjectID}
-		app, err := firebase.NewApp(ctx, conf)
-		if err != nil {log.Fatalln(err)}
-		client, err := app.Firestore(ctx)
-		if err != nil {log.Fatalln(err)}
-		return client, nil
-	*/
 }
 
-func setupController(cfg Config, repository service.Repository) (*api.Controller, error) {
+func setupController(cfg config.Config, repository service.Repository) (*api.Controller, error) {
 	// Initialize the service.
 	svc, err := service.NewService(repository)
 	if err != nil {
@@ -102,7 +93,7 @@ func setupController(cfg Config, repository service.Repository) (*api.Controller
 	}
 
 	// Initialize the controller.
-	controller, err := api.NewController(svc, version)
+	controller, err := api.NewController(svc, &cfg, version)
 	if err != nil {
 		return nil, fmt.Errorf("initializing controller: %w", err)
 	}

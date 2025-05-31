@@ -1,9 +1,12 @@
 package v1
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
+	"os"
 
 	"subscriber-service/transport/api/v1/model"
 	"subscriber-service/transport/util"
@@ -35,17 +38,21 @@ func (h *Handler) SendPublishedPost(w http.ResponseWriter, r *http.Request) {
 	util.WriteResponse(w, http.StatusOK, post)
 }
 
-/*
-	url := fmt.Sprintf("http://subscriber-service:8083/nginx/newsletters/%s/posts/%s/publish", newsletterID, postID)
+// move to newsletter service
+func notifySubscriberSendPublishedPost(newsletterID, postID string, post model.Post) error {
+	url := fmt.Sprintf("http://subscriber-service:8083/newsletters/%s/posts/%s/publish", newsletterID, postID)
+
 	payload, err := json.Marshal(post)
 	if err != nil {
 		return err
 	}
+
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(payload))
 	if err != nil {
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Service-Token", os.Getenv("SERVICE_TOKEN"))
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -56,4 +63,5 @@ func (h *Handler) SendPublishedPost(w http.ResponseWriter, r *http.Request) {
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("subscriber-service returned status %d", resp.StatusCode)
 	}
-*/
+	return nil
+}

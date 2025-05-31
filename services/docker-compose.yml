@@ -52,6 +52,7 @@ services:
     environment:
       PORT: 8082
       DATABASE_URL: postgres://user:password@postgres_newsletter:5432/newsletterdatabase?sslmode=disable
+      SERVICE_TOKEN: ## openssl rand -base64 32 - has the be the same as the subscriber's service
       
   
   subscriber-service:
@@ -66,6 +67,8 @@ services:
       EMAIL_ADDRESS: "newsletter_email_address"
       RESEND_API_KEY: "re_37p9fSD2_FCSyR7zNE7utrW9jcs2sNcbA"
       BASE_URL: "http://localhost:8080"
+      NEWSLETTER_JWT_SECRET: ## openssl rand -base64 32
+      SERVICE_TOKEN: ## openssl rand -base64 32 - has to be the same as the newsletter's service
 
   migrate-editor:
     image: migrate/migrate
