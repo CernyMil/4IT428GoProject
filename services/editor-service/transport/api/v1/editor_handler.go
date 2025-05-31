@@ -45,7 +45,6 @@ func (h *EditorHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
 		return
 	}
-
 	json.NewEncoder(w).Encode(editor)
 }
 
