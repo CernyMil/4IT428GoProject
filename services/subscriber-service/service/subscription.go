@@ -2,10 +2,13 @@ package service
 
 import (
 	"context"
+	"embed"
+	"errors"
 	"fmt"
 	"os"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 
 	"subscriber-service/pkg/id"
@@ -14,61 +17,117 @@ import (
 	svcmodel "subscriber-service/service/model"
 )
 
-func (s Service) SubscribeToNewsletter(ctx context.Context, subReq svcmodel.SubscribeRequest) error {
-	newsletterId := subReq.NewsletterID.String()
+var validate = validator.New()
 
+func (s Service) SubscribeToNewsletter(ctx context.Context, subReq svcmodel.SubscribeRequest) error {
 	claims := map[string]interface{}{
 		"email":        subReq.Email,
 		"newsletterId": subReq.NewsletterID,
 	}
-
 	token, err := token.GenerateJWT(claims, 24*time.Hour)
 	if err != nil {
 		return err
 	}
 
-	if err := sendConfirmationRequestMail(subReq.Email, newsletterId, token); err != nil {
-		return err
+	if err := validate.Var(subReq.Email, "required,email"); err != nil {
+		return fmt.Errorf("invalid email: %w", err)
 	}
 
-	return nil
-}
-
-func (s Service) ConfirmSubscription(ctx context.Context, subReq svcmodel.SubscribeRequest) (svcmodel.Subscription, error) {
-	subscriptionId := id.Subscription(uuid.New())
-
-	claims := map[string]interface{}{
-		"email":          subReq.Email,
-		"newsletterId":   subReq.NewsletterID,
-		"subscriptionId": subscriptionId,
+	if err := validate.Var(subReq.NewsletterID, "required"); err != nil {
+		return fmt.Errorf("invalid newsletter ID: %w", err)
 	}
 
-	token, err := token.GenerateJWT(claims, 0)
-	if err != nil {
-		return svcmodel.Subscription{}, err
-	}
-
-	subscription, err := s.repository.AddSubscription(ctx, subReq.NewsletterID, subscriptionId, subReq.Email, token)
-	if err != nil {
-		return svcmodel.Subscription{}, err
-	}
-
-	if err := sendConfirmationMail(subReq.Email, subReq.NewsletterID.String(), token); err != nil {
-		return svcmodel.Subscription{}, err
-	}
-
-	return *subscription, nil
-}
-
-func (s Service) UnsubscribeFromNewsletter(ctx context.Context, unsubReq svcmodel.UnsubscribeRequest) error {
-	newsletterId := unsubReq.NewsletterID.String()
-	subscriptionId := unsubReq.SubscriptionID.String()
-
-	if err := s.repository.DeleteSubscription(ctx, newsletterId, subscriptionId); err != nil {
+	if err := sendConfirmationRequestMail(subReq.Email, subReq.NewsletterID.String(), token); err != nil {
 		return err
 	}
 	return nil
 }
+
+func (s Service) ConfirmSubscription(ctx context.Context, tokenString string) (svcmodel.Subscription, error) {
+	claims, err := token.ParseJWT(tokenString)
+	if err != nil {
+		return svcmodel.Subscription{}, fmt.Errorf("invalid or expired token: %w", err)
+	}
+
+	email, ok := claims["email"].(string)
+	if !ok {
+		return svcmodel.Subscription{}, errors.New("invalid email in token claims")
+	}
+
+	newsletterIdStr, ok := claims["newsletterId"].(string)
+	if !ok {
+		return svcmodel.Subscription{}, errors.New("invalid newsletterId in token claims")
+	}
+
+	var newsletterID id.Newsletter
+	if err := newsletterID.FromString(newsletterIdStr); err != nil {
+		return svcmodel.Subscription{}, fmt.Errorf("invalid newsletterId: %w", err)
+	}
+
+	subscription := svcmodel.Subscription{
+		ID:           id.Subscription(uuid.New()),
+		NewsletterID: newsletterID,
+		Email:        email,
+		CreatedAt:    time.Now(),
+		Token:        tokenString,
+	}
+
+	if err := validate.Struct(subscription); err != nil {
+		return svcmodel.Subscription{}, fmt.Errorf("invalid subscription request: %w", err)
+	}
+
+	claimsSub := map[string]interface{}{
+		"email":          subscription.Email,
+		"newsletterId":   subscription.NewsletterID,
+		"subscriptionId": subscription.ID,
+	}
+
+	token, err := token.GenerateJWT(claimsSub, -1)
+	if err != nil {
+		return svcmodel.Subscription{}, err
+	}
+
+	if err := s.repository.AddSubscription(ctx, subscription); err != nil {
+		return svcmodel.Subscription{}, err
+	}
+
+	if err := sendConfirmationMail(subscription.Email, subscription.NewsletterID.String(), token); err != nil {
+		return svcmodel.Subscription{}, err
+	}
+
+	return subscription, nil
+}
+
+func (s Service) UnsubscribeFromNewsletter(ctx context.Context, tokenString string) error {
+	claims, err := token.ParseJWT(tokenString)
+	if err != nil {
+	}
+
+	subcscriptionIdStr, ok := claims["subscriptionId"].(string)
+	if !ok {
+		return errors.New("invalid subscriptionId in token claims")
+	}
+	newsletterIdStr, ok := claims["newsletterId"].(string)
+	if !ok {
+		return errors.New("invalid newsletterId in token claims")
+	}
+
+	var unsubReq svcmodel.UnsubscribeRequest
+	if err := unsubReq.SubscriptionID.FromString(subcscriptionIdStr); err != nil {
+		return fmt.Errorf("invalid subscriptionId: %w", err)
+	}
+	if err := unsubReq.NewsletterID.FromString(newsletterIdStr); err != nil {
+		return fmt.Errorf("invalid newsletterId: %w", err)
+	}
+
+	if err := s.repository.DeleteSubscription(ctx, unsubReq); err != nil {
+		return err
+	}
+	return nil
+}
+
+//go:embed templates/confirmation_request.html
+var templateFS_ConfReq embed.FS
 
 func sendConfirmationRequestMail(email string, newsletterId string, token string) error {
 	baseUrl := os.Getenv("BASE_URL")
@@ -97,6 +156,9 @@ func sendConfirmationRequestMail(email string, newsletterId string, token string
 
 	return nil
 }
+
+//go:embed templates/confirmation_request.html
+var templateFS_Conf embed.FS
 
 func sendConfirmationMail(email string, newsletterId string, token string) error {
 
