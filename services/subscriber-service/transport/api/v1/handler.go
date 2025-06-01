@@ -29,8 +29,8 @@ func (h *Handler) initRouter() {
 	// Public routes
 	r.Route("/subscriptions", func(r chi.Router) {
 		r.Post("/subscribe", h.SubscribeToNewsletter)
-		r.Delete("/unsubscribe", h.UnsubscribeFromNewsletter)
 		r.Get("/confirm", h.ConfirmSubscription)
+		r.Get("/unsubscribe", h.UnsubscribeFromNewsletter)
 	})
 
 	// Internal routes with shared middleware
@@ -39,6 +39,7 @@ func (h *Handler) initRouter() {
 		r.Route("/internal", func(r chi.Router) {
 			r.Post("/publish", h.SendPublishedPost)
 			r.Delete("/delete", h.DeleteNewsletter)
+			r.Post("/create", h.CreateNewsletter)
 		})
 	})
 

@@ -19,7 +19,28 @@ import (
 
 var validate = validator.New()
 
+// SubscribeToNewsletter - subscribes a user to a newsletter and sends a confirmation request email.
 func (s Service) SubscribeToNewsletter(ctx context.Context, subReq svcmodel.SubscribeRequest) error {
+	newsletter, err := s.repository.GetNewsletterById(ctx, subReq.NewsletterID)
+	if err != nil {
+		return fmt.Errorf("failed to get newsletter by ID: %w", err)
+	}
+
+	if newsletter == (id.Newsletter{}) {
+		return fmt.Errorf("newsletter with ID %s does not exist", subReq.NewsletterID)
+	}
+
+	//check if already subscribed
+	if subscribers, err := s.repository.GetSubscribers(ctx, subReq.NewsletterID); err != nil {
+		return fmt.Errorf("failed to check wheather email is already subscribed to the newsletter %s: %w", subReq.NewsletterID, err)
+	} else {
+		for _, subscriber := range subscribers {
+			if subscriber.Email == subReq.Email {
+				return fmt.Errorf("email %s is already subscribed to newsletter %s", subReq.Email, subReq.NewsletterID)
+			}
+		}
+	}
+
 	claims := map[string]interface{}{
 		"email":        subReq.Email,
 		"newsletterId": subReq.NewsletterID,
@@ -37,12 +58,13 @@ func (s Service) SubscribeToNewsletter(ctx context.Context, subReq svcmodel.Subs
 		return fmt.Errorf("invalid newsletter ID: %w", err)
 	}
 
-	if err := sendConfirmationRequestMail(subReq.Email, subReq.NewsletterID.String(), token); err != nil {
+	if err := sendConfirmationRequestMail(subReq.Email, token); err != nil {
 		return err
 	}
 	return nil
 }
 
+// ConfirmSubscription - confirms a subscription using a token.
 func (s Service) ConfirmSubscription(ctx context.Context, tokenString string) (svcmodel.Subscription, error) {
 	claims, err := token.ParseJWT(tokenString)
 	if err != nil {
@@ -64,22 +86,23 @@ func (s Service) ConfirmSubscription(ctx context.Context, tokenString string) (s
 		return svcmodel.Subscription{}, fmt.Errorf("invalid newsletterId: %w", err)
 	}
 
-	subscription := svcmodel.Subscription{
-		ID:           id.Subscription(uuid.New()),
-		NewsletterID: newsletterID,
-		Email:        email,
-		CreatedAt:    time.Now(),
-		Token:        tokenString,
+	//check if already subscribed
+	if subscribers, err := s.repository.GetSubscribers(ctx, newsletterID); err != nil {
+		return svcmodel.Subscription{}, fmt.Errorf("failed to check wheather email is already subscribed to the newsletter %s: %w", newsletterID, err)
+	} else {
+		for _, subscriber := range subscribers {
+			if subscriber.Email == email {
+				return svcmodel.Subscription{}, fmt.Errorf("email %s is already subscribed to newsletter %s", email, newsletterID)
+			}
+		}
 	}
 
-	if err := validate.Struct(subscription); err != nil {
-		return svcmodel.Subscription{}, fmt.Errorf("invalid subscription request: %w", err)
-	}
+	subscriptionID := id.Subscription(uuid.New())
 
 	claimsSub := map[string]interface{}{
-		"email":          subscription.Email,
-		"newsletterId":   subscription.NewsletterID,
-		"subscriptionId": subscription.ID,
+		"email":          email,
+		"newsletterId":   newsletterID,
+		"subscriptionId": subscriptionID,
 	}
 
 	token, err := token.GenerateJWT(claimsSub, -1)
@@ -87,17 +110,30 @@ func (s Service) ConfirmSubscription(ctx context.Context, tokenString string) (s
 		return svcmodel.Subscription{}, err
 	}
 
+	subscription := svcmodel.Subscription{
+		ID:           subscriptionID,
+		NewsletterID: newsletterID,
+		Email:        email,
+		CreatedAt:    time.Now(),
+		Token:        token,
+	}
+
+	if err := validate.Struct(subscription); err != nil {
+		return svcmodel.Subscription{}, fmt.Errorf("invalid subscription request: %w", err)
+	}
+
 	if err := s.repository.AddSubscription(ctx, subscription); err != nil {
 		return svcmodel.Subscription{}, err
 	}
 
-	if err := sendConfirmationMail(subscription.Email, subscription.NewsletterID.String(), token); err != nil {
+	if err := sendConfirmationMail(subscription.Email, token); err != nil {
 		return svcmodel.Subscription{}, err
 	}
 
 	return subscription, nil
 }
 
+// UnsubscribeFromNewsletter - unsubscribes a user from a newsletter using a token.
 func (s Service) UnsubscribeFromNewsletter(ctx context.Context, tokenString string) error {
 	claims, err := token.ParseJWT(tokenString)
 	if err != nil {
@@ -129,9 +165,9 @@ func (s Service) UnsubscribeFromNewsletter(ctx context.Context, tokenString stri
 //go:embed templates/confirmation_request.html
 var templateFS_ConfReq embed.FS
 
-func sendConfirmationRequestMail(email string, newsletterId string, token string) error {
+func sendConfirmationRequestMail(email string, token string) error {
 	baseUrl := os.Getenv("BASE_URL")
-	confirmLink := baseUrl + "/api/v1/newsletters/" + newsletterId + "/confirm?token=" + token
+	confirmLink := baseUrl + "/subscriber-service/api/v1/subscriptions" + "/confirm?token=" + token
 
 	templateContent, err := templateFS_ConfReq.ReadFile("templates/confirmation_request.html")
 	if err != nil {
@@ -157,15 +193,15 @@ func sendConfirmationRequestMail(email string, newsletterId string, token string
 	return nil
 }
 
-//go:embed templates/confirmation_request.html
+//go:embed templates/confirmation.html
 var templateFS_Conf embed.FS
 
-func sendConfirmationMail(email string, newsletterId string, token string) error {
+func sendConfirmationMail(email string, token string) error {
 
 	baseUrl := os.Getenv("BASE_URL")
-	unsubscribeLink := baseUrl + "/api/v1/newsletters/" + newsletterId + "/unsubscribe?token=" + token
+	unsubscribeLink := baseUrl + "/subscriber-service/api/v1/subscriptions" + "/unsubscribe?token=" + token
 
-	templateContent, err := templateFS_Conf.ReadFile("templates/confirmation_request.html")
+	templateContent, err := templateFS_Conf.ReadFile("templates/confirmation.html")
 	if err != nil {
 		return fmt.Errorf("failed to read embedded template: %w", err)
 	}
