@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"subscriber-service/cmd/api/config"
 	apiv1 "subscriber-service/transport/api/v1"
 
 	"github.com/go-chi/chi"
@@ -21,13 +22,15 @@ type Controller struct {
 	*chi.Mux
 
 	service apiv1.SubscriberService
+	cfg     *config.Config
 	version string
 }
 
-func NewController(service apiv1.SubscriberService, version string) (*Controller, error) {
+func NewController(service apiv1.SubscriberService, cfg *config.Config, version string) (*Controller, error) {
 	controller := &Controller{
 		service: service,
 		version: version,
+		cfg:     cfg,
 	}
 	controller.initRouter()
 	return controller, nil
@@ -42,6 +45,7 @@ func (c *Controller) initRouter() {
 
 		v1Handler := apiv1.NewHandler(
 			c.service,
+			c.cfg,
 		)
 
 		r.Route("/api", func(r chi.Router) {

@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"sync"
@@ -20,6 +20,7 @@ var (
 type Config struct {
 	Port           int    `env:"PORT" validate:"required"`
 	ServiceAccount string `env:"SERVICE_ACCOUNT" validate:"required"`
+	ServiceToken   string `env:"SERVICE_TOKEN" validate:"required"`
 }
 
 func LoadConfig() (Config, error) {

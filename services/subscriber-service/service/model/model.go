@@ -10,6 +10,7 @@ type Subscription struct {
 	NewsletterID id.Newsletter   `json:"newsletter_id" validate:"required"`
 	Email        string          `json:"email" validate:"email" required:"true"`
 	CreatedAt    time.Time       `json:"created_at"`
+	Token        string          `json:"token" validate:"required"`
 }
 
 type PostHTML struct {

@@ -18,13 +18,13 @@ import (
 func main() {
 	dbURL := os.Getenv("DATABASE_URL")
 	firebaseCred := os.Getenv("FIREBASE_CRED")
-
+	firebaseAPIKey := os.Getenv("FIREBASE_API_KEY")
 	dbpool, err := pgxpool.New(context.Background(), dbURL)
 	if err != nil {
 		log.Fatalf("Failed to connect to DB: %v", err)
 	}
 
-	auth, err := middleware.NewFirebaseAuth(firebaseCred)
+	auth, err := middleware.NewFirebaseAuth(firebaseCred, firebaseAPIKey)
 	if err != nil {
 		log.Fatalf("Failed to initialize Firebase: %v", err)
 	}

@@ -2,13 +2,18 @@ package service
 
 import (
 	"context"
+	"embed"
 	"fmt"
 	"os"
 
+	token "subscriber-service/pkg/token"
 	"subscriber-service/service/mail"
 	svcmodel "subscriber-service/service/model"
 	"subscriber-service/transport/api/v1/model"
 )
+
+//go:embed templates/newsletter_post.html
+var templateFS_NewsPost embed.FS
 
 func (s Service) SendPublishedPost(ctx context.Context, post model.Post) error {
 	subscriberInfo, err := s.repository.GetSubscribers(ctx, post.NewsletterID)
@@ -28,8 +33,20 @@ func (s Service) SendPublishedPost(ctx context.Context, post model.Post) error {
 			Email:           info.Email,
 			Title:           post.Title,
 			Content:         post.Body,
-			UnsubscribeLink: baseUrl + "/api/v1/newsletters/" + post.NewsletterID.String() + "/unsubscribe?token=" + info.Token,
+			UnsubscribeLink: baseUrl + "/subscriber-service/api/v1/subscriptions" + "/unsubscribe?token=" + info.Token,
 		})
+		if err != nil {
+			return fmt.Errorf("failed to prepare HTML for email %s: %w", info.Email, err)
+		}
+
+		claims, err := token.ParseJWT(info.Token)
+		if err != nil {
+		}
+
+		subcscriptionIdStr, ok := claims["subscriptionId"].(string)
+		if !ok {
+			return fmt.Errorf("invalid subscriptionId %s in token claims for %s", subcscriptionIdStr, info.Email)
+		}
 
 		if err != nil {
 			return fmt.Errorf("failed to prepare email for %s: %w", info.Email, err)

@@ -8,11 +8,12 @@ import (
 )
 
 type Repository interface {
-	AddSubscription(ctx context.Context, newsletterId id.Newsletter, subscriptionId id.Subscription, email string, token string) (*svcmodel.Subscription, error)
-	DeleteSubscription(ctx context.Context, newsletterId string, subscriptionId string) error
+	AddSubscription(ctx context.Context, subscription svcmodel.Subscription) error
+	DeleteSubscription(ctx context.Context, unsubReq svcmodel.UnsubscribeRequest) error
 	GetSubscribers(ctx context.Context, newsletterId id.Newsletter) ([]dbmodel.SubscriberInfo, error)
 	CreateNewsletter(ctx context.Context, newsletterId id.Newsletter) error
 	DeleteNewsletter(ctx context.Context, newsletterId id.Newsletter) error
+	GetNewsletterById(ctx context.Context, newsletterId id.Newsletter) (id.Newsletter, error)
 }
 
 type Service struct {

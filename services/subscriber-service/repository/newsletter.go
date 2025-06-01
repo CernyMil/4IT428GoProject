@@ -5,6 +5,8 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"subscriber-service/pkg/id"
 )
@@ -12,25 +14,38 @@ import (
 func (r *Repository) CreateNewsletter(ctx context.Context, newsletterId id.Newsletter) error {
 	client := r.client
 
-	storeNewsletter := map[string]interface{}{
-		"newsletterId": newsletterId.String(),
+	newsletter := map[string]interface{}{
+		"id": newsletterId.String(),
 	}
 
-	if _, err := client.Collection("subscription_service_newsletters").Doc(newsletterId.String()).Set(ctx, storeNewsletter); err != nil {
+	_, err := client.Collection("subscription_service_newsletters").Doc(newsletterId.String()).Create(ctx, newsletter)
+	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
-func (r *Repository) DeleteNewsletter(ctx context.Context, newsletter id.Newsletter) error {
+func (r *Repository) GetNewsletterById(ctx context.Context, newsletterId id.Newsletter) (id.Newsletter, error) {
 	client := r.client
-	err := deleteCollection(ctx, client, "subscriptions", 1000)
+	_, err := client.Collection("subscription_service_newsletters").Doc(newsletterId.String()).Get(ctx)
+	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			return id.Newsletter{}, nil // Newsletter does not exist
+		}
+		return id.Newsletter{}, err // Other error
+	}
+
+	return newsletterId, nil
+}
+
+func (r *Repository) DeleteNewsletter(ctx context.Context, newsletterId id.Newsletter) error {
+	client := r.client
+	err := deleteSubscriptionsForNewsletter(ctx, client, newsletterId.String(), 1000)
 	if err != nil {
 		return err
 	}
 
-	_, err = client.Collection("subscription_service_newsletters").Doc(newsletter.String()).Delete(ctx)
+	_, err = client.Collection("subscription_service_newsletters").Doc(newsletterId.String()).Delete(ctx)
 	if err != nil {
 		return err
 	}
@@ -38,19 +53,15 @@ func (r *Repository) DeleteNewsletter(ctx context.Context, newsletter id.Newslet
 
 }
 
-func deleteCollection(ctx context.Context, client *firestore.Client, collectionName string, batchSize int) error {
-	// Instantiate a client
-
-	col := client.Collection(collectionName)
+func deleteSubscriptionsForNewsletter(ctx context.Context, client *firestore.Client, newsletterId string, batchSize int) error {
+	col := client.Collection("subscription_service_newsletters").Doc(newsletterId).Collection("subscriptions")
 	bulkwriter := client.BulkWriter(ctx)
 
 	for {
-		// Get a batch of documents
 		iter := col.Limit(batchSize).Documents(ctx)
 		numDeleted := 0
 
-		// Iterate through the documents, adding
-		// a delete operation for each one to the BulkWriter.
+		// Iterate through the documents, adding a delete operation for each one to the BulkWriter.
 		for {
 			doc, err := iter.Next()
 			if err == iterator.Done {
@@ -59,13 +70,11 @@ func deleteCollection(ctx context.Context, client *firestore.Client, collectionN
 			if err != nil {
 				return err
 			}
-
 			bulkwriter.Delete(doc.Ref)
 			numDeleted++
 		}
 
-		// If there are no documents to delete,
-		// the process is over.
+		// If there are no documents to delete, the process is over.
 		if numDeleted == 0 {
 			bulkwriter.End()
 			break

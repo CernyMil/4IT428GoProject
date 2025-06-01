@@ -1,21 +1,23 @@
 package v1
 
 import (
-	"log"
-	"net/http"
-
 	"github.com/go-chi/chi"
+
+	"subscriber-service/cmd/api/config"
+	"subscriber-service/transport/middleware"
 )
 
 type Handler struct {
 	*chi.Mux
+	Config *config.Config
 
 	service SubscriberService
 }
 
-func NewHandler(service SubscriberService) *Handler {
+func NewHandler(service SubscriberService, cfg *config.Config) *Handler {
 	h := &Handler{
 		service: service,
+		Config:  cfg,
 	}
 	h.initRouter()
 	return h
@@ -24,20 +26,21 @@ func NewHandler(service SubscriberService) *Handler {
 func (h *Handler) initRouter() {
 	r := chi.NewRouter()
 
-	r.Route("/newsletters/{newsletterId}", func(r chi.Router) {
+	// Public routes
+	r.Route("/subscriptions", func(r chi.Router) {
 		r.Post("/subscribe", h.SubscribeToNewsletter)
-		r.Delete("/unsubscribe", h.UnsubscribeFromNewsletter)
 		r.Get("/confirm", h.ConfirmSubscription)
-	})
-	r.Route("/nginx/newsletters", func(r chi.Router) {
-		r.Post("/{newsletterId}/posts/publish", h.SendPublishedPost)
-		r.Delete("/{newsletterId}/delete", h.DeleteNewsletter)
-		r.Post("/create", h.CreateNewsletter)
+		r.Get("/unsubscribe", h.UnsubscribeFromNewsletter)
 	})
 
-	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("Not found: %s %s", r.Method, r.URL.Path)
-		http.NotFound(w, r)
+	// Internal routes with shared middleware
+	r.Group(func(r chi.Router) {
+		r.Use(middleware.InternalOnlyMiddleware(h.Config.ServiceToken))
+		r.Route("/internal", func(r chi.Router) {
+			r.Post("/publish", h.SendPublishedPost)
+			r.Delete("/delete", h.DeleteNewsletter)
+			r.Post("/create", h.CreateNewsletter)
+		})
 	})
 
 	h.Mux = r
