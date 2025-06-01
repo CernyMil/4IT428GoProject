@@ -20,9 +20,9 @@ var (
 
 type Config struct {
 	Port         int    `env:"PORT" validate:"required"`
-	AuthSecret   string `env:"AUTH_SECRET"`
-	DatabaseURL  string `env:"DATABASE_URL"`
-	FirebaseCred string `env:"FIREBASE_CRED"`
+	AuthSecret   string `env:"AUTH_SECRET" validate:"required"`
+	DatabaseURL  string `env:"DATABASE_URL" validate:"required,url"`
+	FirebaseCred string `env:"FIREBASE_CRED" validate:"required"`
 }
 
 func init() {
