@@ -2,6 +2,7 @@ package v1
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	id "newsletter-service/pkg/id"
@@ -40,14 +41,14 @@ func (h *Handler) initRouter() {
 	authenticate := h.authenticator.Authenticate
 
 	r.Route("/newsletters", func(r chi.Router) {
-		r.Post("/", h.CreateNewsletter)
-		r.Get("/", h.ListNewsletters)
+		r.With(authenticate).Post("/", h.CreateNewsletter)
+		r.With(authenticate).Get("/", h.ListNewsletters)
 		r.With(authenticate).Put("/{id}", h.UpdateNewsletter)
 		r.With(authenticate).Delete("/{id}", h.DeleteNewsletter)
 
 		r.Route("/{id}/posts", func(r chi.Router) {
-			r.Post("/", h.CreatePost)
-			r.Get("/", h.ListPosts)
+			r.With(authenticate).Post("/", h.CreatePost)
+			r.With(authenticate).Get("/", h.ListPosts)
 			r.With(authenticate).Put("/{postID}", h.UpdatePost)
 			r.With(authenticate).Delete("/{postID}", h.DeletePost)
 		})
@@ -70,6 +71,7 @@ func (h *Handler) CreateNewsletter(w http.ResponseWriter, r *http.Request) {
 
 	n, err := h.service.CreateNewsletter(r.Context(), input)
 	if err != nil {
+		fmt.Println("CreateNewsletter error:", err)
 		http.Error(w, `{"error": "failed to create newsletter"}`, http.StatusInternalServerError)
 		return
 	}
@@ -83,6 +85,7 @@ func (h *Handler) CreateNewsletter(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) ListNewsletters(w http.ResponseWriter, r *http.Request) {
 	newsletters, err := h.service.ListNewsletters(r.Context())
 	if err != nil {
+		fmt.Println("ListNewsletters error:", err)
 		http.Error(w, `{"error": "failed to fetch newsletters"}`, http.StatusInternalServerError)
 		return
 	}
