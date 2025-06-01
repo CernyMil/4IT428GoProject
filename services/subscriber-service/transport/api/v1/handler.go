@@ -31,7 +31,6 @@ func (h *Handler) initRouter() {
 		r.Post("/subscribe", h.SubscribeToNewsletter)
 		r.Get("/confirm", h.ConfirmSubscription)
 		r.Get("/unsubscribe", h.UnsubscribeFromNewsletter)
-		r.Delete("/unsubscribe", h.UnsubscribeFromNewsletter)
 	})
 
 	// Internal routes with shared middleware
