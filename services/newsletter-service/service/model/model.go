@@ -1,49 +1,47 @@
 package model
 
-import "context"
+import (
+	id "newsletter-service/pkg/id"
+	"time"
+)
 
-// Service defines the methods required for newsletter and post operations.
-type Service interface {
-	CreateNewsletter(ctx context.Context, input CreateNewsletterInput) (Newsletter, error)
-	ListNewsletters(ctx context.Context) ([]Newsletter, error)
-	UpdateNewsletter(ctx context.Context, id string, input UpdateNewsletterInput) (Newsletter, error)
-	DeleteNewsletter(ctx context.Context, id string) error
-
-	CreatePost(ctx context.Context, newsletterID string, input CreatePostInput) (Post, error)
-	ListPosts(ctx context.Context, newsletterID string) ([]Post, error)
-	UpdatePost(ctx context.Context, newsletterID, postID string, input UpdatePostInput) (Post, error)
-	DeletePost(ctx context.Context, newsletterID, postID string) error
-}
-
-// Define the necessary structs for input and output.
+// CreateNewsletterInput is the input data required to create a newsletter.
 type CreateNewsletterInput struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
 }
 
+// UpdateNewsletterInput is the input data required to update a newsletter.
 type UpdateNewsletterInput struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
 }
 
+// Newsletter represents a newsletter with an ID, title, and description.
 type Newsletter struct {
-	ID          string `json:"id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
+	ID          id.Newsletter `json:"id"`
+	Title       string        `json:"title"`
+	Description string        `json:"description"`
+	CreatedAt   time.Time     `json:"created_at"` // ISO 8601 format
 }
 
+// CreatePostInput is the input data required to create a post.
 type CreatePostInput struct {
 	Title   string `json:"title"`
 	Content string `json:"content"`
 }
 
+// UpdatePostInput is the input data required to update a post.
 type UpdatePostInput struct {
 	Title   string `json:"title"`
 	Content string `json:"content"`
 }
 
 type Post struct {
-	ID      string `json:"id"`
-	Title   string `json:"title"`
-	Content string `json:"content"`
+	ID           id.Post       `json:"id"`
+	NewsletterID id.Newsletter `json:"newsletter_id"`
+	Title        string        `json:"title"`
+	Content      string        `json:"content"`
+	Published    bool          `json:"published"`
+	CreatedAt    time.Time     `json:"created_at"` // ISO 8601 format
 }

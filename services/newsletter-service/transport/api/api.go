@@ -3,7 +3,7 @@ package api
 import (
 	"net/http"
 
-	"newsletter-service/service/model"
+	"newsletter-service/service"
 	v1 "newsletter-service/transport/api/v1"
 	"newsletter-service/transport/middleware"
 
@@ -11,7 +11,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func NewRouter(newsletterService model.Service, firebaseApp *firebase.App) http.Handler {
+func NewRouter(newsletterService service.NewsletterService, firebaseApp *firebase.App) http.Handler {
 	r := chi.NewRouter()
 
 	authenticator := middleware.NewFirebaseAuthenticator(firebaseApp)
