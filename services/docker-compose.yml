@@ -63,15 +63,8 @@ services:
       dockerfile: Dockerfile
     expose:
       - "8083"
-    environment:
-      PORT: 8083
-      SERVICE_ACCOUNT: "/app/firebase-admin-sdk.json"
-      EMAIL_ADDRESS: "Acme <onboarding@resend.dev>"
-      RESEND_API_KEY: "re_37p9fSD2_FCSyR7zNE7utrW9jcs2sNcbA"
-      BASE_URL: "http://localhost:8080"
-      NEWSLETTER_JWT_SECRET: ## openssl rand -base64 32
-      SERVICE_TOKEN: ## openssl rand -base64 32    - has to be the same as the newsletter's service
-
+    env_file:
+      - ./subscriber-service/.env
   migrate-editor:
     image: migrate/migrate
     volumes:
