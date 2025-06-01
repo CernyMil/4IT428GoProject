@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"newsletter-service/repository"
+	id "newsletter-service/pkg/id"
+	"newsletter-service/service"
 	"newsletter-service/service/model"
 	"newsletter-service/transport/middleware"
 
@@ -16,36 +17,13 @@ type Handler struct {
 	*chi.Mux
 
 	authenticator middleware.FirebaseAuthenticator
-	service       model.Service
-}
-
-type NewsletterHandler struct {
-	repo repository.Repository
-}
-
-func NewNewsletterHandler(repo repository.Repository) *NewsletterHandler {
-	return &NewsletterHandler{repo: repo}
-}
-
-func (h *NewsletterHandler) Routes() *chi.Mux {
-	r := chi.NewRouter()
-	r.Post("/newsletters", h.createNewsletter)
-	r.Get("/newsletters", h.listNewsletters)
-	return r
-}
-
-func (h *NewsletterHandler) createNewsletter(w http.ResponseWriter, r *http.Request) {
-	// Implementation for creating a newsletter
-}
-
-func (h *NewsletterHandler) listNewsletters(w http.ResponseWriter, r *http.Request) {
-	// Implementation for listing newsletters
+	service       service.NewsletterService
 }
 
 // NewHandler creates a new instance of Handler.
 func NewHandler(
 	authenticator middleware.FirebaseAuthenticator,
-	service model.Service,
+	service service.NewsletterService,
 ) *Handler {
 	h := &Handler{
 		authenticator: authenticator,
@@ -59,17 +37,14 @@ func NewHandler(
 func (h *Handler) initRouter() {
 	r := chi.NewRouter()
 
-	// Setup middleware
 	authenticate := h.authenticator.Authenticate
 
-	// Newsletter routes
 	r.Route("/newsletters", func(r chi.Router) {
 		r.Post("/", h.CreateNewsletter)
 		r.Get("/", h.ListNewsletters)
 		r.With(authenticate).Put("/{id}", h.UpdateNewsletter)
 		r.With(authenticate).Delete("/{id}", h.DeleteNewsletter)
 
-		// Post routes
 		r.Route("/{id}/posts", func(r chi.Router) {
 			r.Post("/", h.CreatePost)
 			r.Get("/", h.ListPosts)
@@ -79,6 +54,10 @@ func (h *Handler) initRouter() {
 	})
 
 	h.Mux = r
+}
+
+func (h *Handler) Routes() http.Handler {
+	return h.Mux
 }
 
 // CreateNewsletter handles the creation of a new newsletter.
@@ -114,9 +93,15 @@ func (h *Handler) ListNewsletters(w http.ResponseWriter, r *http.Request) {
 
 // UpdateNewsletter handles updating an existing newsletter.
 func (h *Handler) UpdateNewsletter(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-	if id == "" {
+	idStr := chi.URLParam(r, "id")
+	if idStr == "" {
 		http.Error(w, `{"error": "missing newsletter ID"}`, http.StatusBadRequest)
+		return
+	}
+
+	var newsletterID id.Newsletter
+	if err := newsletterID.FromString(idStr); err != nil {
+		http.Error(w, `{"error": "invalid newsletter ID"}`, http.StatusBadRequest)
 		return
 	}
 
@@ -126,7 +111,7 @@ func (h *Handler) UpdateNewsletter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	n, err := h.service.UpdateNewsletter(r.Context(), id, input)
+	n, err := h.service.UpdateNewsletter(r.Context(), newsletterID, input)
 	if err != nil {
 		http.Error(w, `{"error": "failed to update newsletter"}`, http.StatusInternalServerError)
 		return
@@ -138,13 +123,19 @@ func (h *Handler) UpdateNewsletter(w http.ResponseWriter, r *http.Request) {
 
 // DeleteNewsletter handles deleting a newsletter.
 func (h *Handler) DeleteNewsletter(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-	if id == "" {
+	idStr := chi.URLParam(r, "id")
+	if idStr == "" {
 		http.Error(w, `{"error": "missing newsletter ID"}`, http.StatusBadRequest)
 		return
 	}
 
-	if err := h.service.DeleteNewsletter(r.Context(), id); err != nil {
+	var newsletterID id.Newsletter
+	if err := newsletterID.FromString(idStr); err != nil {
+		http.Error(w, `{"error": "invalid newsletter ID"}`, http.StatusBadRequest)
+		return
+	}
+
+	if err := h.service.DeleteNewsletter(r.Context(), newsletterID); err != nil {
 		http.Error(w, `{"error": "failed to delete newsletter"}`, http.StatusInternalServerError)
 		return
 	}
@@ -154,9 +145,15 @@ func (h *Handler) DeleteNewsletter(w http.ResponseWriter, r *http.Request) {
 
 // CreatePost handles the creation of a new post.
 func (h *Handler) CreatePost(w http.ResponseWriter, r *http.Request) {
-	newsletterID := chi.URLParam(r, "id")
-	if newsletterID == "" {
+	newsletterIDStr := chi.URLParam(r, "id")
+	if newsletterIDStr == "" {
 		http.Error(w, `{"error": "missing newsletter ID"}`, http.StatusBadRequest)
+		return
+	}
+
+	var newsletterID id.Newsletter
+	if err := newsletterID.FromString(newsletterIDStr); err != nil {
+		http.Error(w, `{"error": "invalid newsletter ID"}`, http.StatusBadRequest)
 		return
 	}
 
@@ -179,9 +176,15 @@ func (h *Handler) CreatePost(w http.ResponseWriter, r *http.Request) {
 
 // ListPosts handles listing all posts for a specific newsletter.
 func (h *Handler) ListPosts(w http.ResponseWriter, r *http.Request) {
-	newsletterID := chi.URLParam(r, "id")
-	if newsletterID == "" {
+	newsletterIDStr := chi.URLParam(r, "id")
+	if newsletterIDStr == "" {
 		http.Error(w, `{"error": "missing newsletter ID"}`, http.StatusBadRequest)
+		return
+	}
+
+	var newsletterID id.Newsletter
+	if err := newsletterID.FromString(newsletterIDStr); err != nil {
+		http.Error(w, `{"error": "invalid newsletter ID"}`, http.StatusBadRequest)
 		return
 	}
 
@@ -197,10 +200,22 @@ func (h *Handler) ListPosts(w http.ResponseWriter, r *http.Request) {
 
 // UpdatePost handles updating an existing post.
 func (h *Handler) UpdatePost(w http.ResponseWriter, r *http.Request) {
-	newsletterID := chi.URLParam(r, "id")
-	postID := chi.URLParam(r, "postID")
-	if newsletterID == "" || postID == "" {
+	newsletterIDStr := chi.URLParam(r, "id")
+	postIDStr := chi.URLParam(r, "postID")
+	if newsletterIDStr == "" || postIDStr == "" {
 		http.Error(w, `{"error": "missing newsletter or post ID"}`, http.StatusBadRequest)
+		return
+	}
+
+	var newsletterID id.Newsletter
+	if err := newsletterID.FromString(newsletterIDStr); err != nil {
+		http.Error(w, `{"error": "invalid newsletter ID"}`, http.StatusBadRequest)
+		return
+	}
+
+	var postID id.Post
+	if err := postID.FromString(postIDStr); err != nil {
+		http.Error(w, `{"error": "invalid post ID"}`, http.StatusBadRequest)
 		return
 	}
 
@@ -222,10 +237,22 @@ func (h *Handler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 
 // DeletePost handles deleting a post.
 func (h *Handler) DeletePost(w http.ResponseWriter, r *http.Request) {
-	newsletterID := chi.URLParam(r, "id")
-	postID := chi.URLParam(r, "postID")
-	if newsletterID == "" || postID == "" {
+	newsletterIDStr := chi.URLParam(r, "id")
+	postIDStr := chi.URLParam(r, "postID")
+	if newsletterIDStr == "" || postIDStr == "" {
 		http.Error(w, `{"error": "missing newsletter or post ID"}`, http.StatusBadRequest)
+		return
+	}
+
+	var newsletterID id.Newsletter
+	if err := newsletterID.FromString(newsletterIDStr); err != nil {
+		http.Error(w, `{"error": "invalid newsletter ID"}`, http.StatusBadRequest)
+		return
+	}
+
+	var postID id.Post
+	if err := postID.FromString(postIDStr); err != nil {
+		http.Error(w, `{"error": "invalid post ID"}`, http.StatusBadRequest)
 		return
 	}
 
