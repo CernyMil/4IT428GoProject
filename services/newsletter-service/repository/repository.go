@@ -2,80 +2,43 @@ package repository
 
 import (
 	"context"
-	"database/sql"
-	"time"
+	"newsletter-service/pkg/id"
+	svcmodel "newsletter-service/service/model"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// Newsletter represents a newsletter entity in the database.
-type Newsletter struct {
-	ID        string    `json:"id"`
-	Subject   string    `json:"subject"`
-	Body      string    `json:"body"`
-	CreatedAt time.Time `json:"created_at"`
-	EditorID  string    `json:"editor_id"`
-}
-
-// UpdateNewsletterInput represents the input for updating a newsletter.
-type UpdateNewsletterInput struct {
-	Subject string `json:"subject"`
-	Body    string `json:"body"`
-}
-
-// Post represents a post entity in the database.
-type Post struct {
-	ID           int       `json:"id"`
-	NewsletterID int       `json:"newsletter_id"`
-	Title        string    `json:"title"`
-	Content      string    `json:"content"`
-	CreatedAt    time.Time `json:"created_at"`
-	Published    bool      `json:"published"`
-}
-
-// Repository defines the methods for interacting with the database.
-type Repository interface {
-	Save(ctx context.Context, n *Newsletter) error
-	FindAll(ctx context.Context) ([]Newsletter, error)
-	FindByID(ctx context.Context, id string) (*Newsletter, error) // New method
-	Update(ctx context.Context, id string, input UpdateNewsletterInput) (*Newsletter, error)
-	Delete(ctx context.Context, id string) error // New method
-
-	// Post-related methods
-	CreatePost(ctx context.Context, p *Post) error
-	FindPostsByNewsletterID(ctx context.Context, newsletterID string) ([]Post, error)
-	UpdatePost(ctx context.Context, id string, p *Post) error
-	DeletePost(ctx context.Context, id string) error
-	PublishPost(ctx context.Context, postID string) error
-}
-
 type postgresRepository struct {
-	db *sql.DB
+	pool *pgxpool.Pool
 }
 
-// NewPostgresRepository creates a new instance of the repository.
-func NewPostgresRepository(db *sql.DB) Repository {
-	return &postgresRepository{db: db}
+// NewPostgresRepository creates a new instance of postgresRepository.
+func NewPostgresRepository(pool *pgxpool.Pool) (*postgresRepository, error) {
+	return &postgresRepository{
+		pool: pool,
+	}, nil
 }
 
 // Save inserts a new newsletter into the database.
-func (r *postgresRepository) Save(ctx context.Context, n *Newsletter) error {
+func (r *postgresRepository) Save(ctx context.Context, n *svcmodel.Newsletter) error {
 	query := `INSERT INTO newsletters (id, subject, body, created_at) VALUES ($1, $2, $3, $4)`
-	_, err := r.db.ExecContext(ctx, query, n.ID, n.Subject, n.Body, n.CreatedAt)
+	_, err := r.pool.Exec(ctx, query, n.ID, n.Title, n.Description, n.CreatedAt)
 	return err
 }
 
 // FindAll retrieves all newsletters from the database.
-func (r *postgresRepository) FindAll(ctx context.Context) ([]Newsletter, error) {
+func (r *postgresRepository) FindAll(ctx context.Context) ([]svcmodel.Newsletter, error) {
 	query := `SELECT id, subject, body, created_at FROM newsletters ORDER BY created_at DESC`
-	rows, err := r.db.QueryContext(ctx, query)
+	rows, err := r.pool.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var newsletters []Newsletter
+	var newsletters []svcmodel.Newsletter
 	for rows.Next() {
-		var n Newsletter
-		if err := rows.Scan(&n.ID, &n.Subject, &n.Body, &n.CreatedAt); err != nil {
+		var n svcmodel.Newsletter
+		if err := rows.Scan(&n.ID, &n.Title, &n.Description, &n.CreatedAt); err != nil {
 			return nil, err
 		}
 		newsletters = append(newsletters, n)
@@ -84,54 +47,56 @@ func (r *postgresRepository) FindAll(ctx context.Context) ([]Newsletter, error) 
 }
 
 // Update modifies an existing newsletter in the database.
-func (r *postgresRepository) Update(ctx context.Context, id string, input UpdateNewsletterInput) (*Newsletter, error) {
+func (r *postgresRepository) Update(ctx context.Context, id id.Newsletter, input svcmodel.UpdateNewsletterInput) (*svcmodel.Newsletter, error) {
 	query := `UPDATE newsletters SET subject = $1, body = $2 WHERE id = $3 RETURNING id, subject, body, created_at`
-	var n Newsletter
-	err := r.db.QueryRowContext(ctx, query, input.Subject, input.Body, id).
-		Scan(&n.ID, &n.Subject, &n.Body, &n.CreatedAt)
+	var n svcmodel.Newsletter
+	err := r.pool.QueryRow(ctx, query, input.Title, input.Description, id).
+		Scan(&n.ID, &n.Title, &n.Description, &n.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
 	return &n, nil
 }
 
-// This method retrieves a specific newsletter by its ID:
-func (r *postgresRepository) FindByID(ctx context.Context, id string) (*Newsletter, error) {
+// FindByID retrieves a specific newsletter by its ID.
+func (r *postgresRepository) FindByID(ctx context.Context, id string) (*svcmodel.Newsletter, error) {
 	query := `SELECT id, subject, body, created_at FROM newsletters WHERE id = $1`
-	row := r.db.QueryRowContext(ctx, query, id)
+	row := r.pool.QueryRow(ctx, query, id)
 
-	var n Newsletter
-	if err := row.Scan(&n.ID, &n.Subject, &n.Body, &n.CreatedAt); err != nil {
+	var n svcmodel.Newsletter
+	if err := row.Scan(&n.ID, &n.Title, &n.Description, &n.CreatedAt); err != nil {
 		return nil, err
 	}
 	return &n, nil
 }
 
 // Delete removes a newsletter from the database by its ID.
-func (r *postgresRepository) Delete(ctx context.Context, id string) error {
+func (r *postgresRepository) Delete(ctx context.Context, id id.Newsletter) error {
 	query := `DELETE FROM newsletters WHERE id = $1`
-	_, err := r.db.ExecContext(ctx, query, id)
+	_, err := r.pool.Exec(ctx, query, id)
 	return err
 }
 
-func (r *postgresRepository) CreatePost(ctx context.Context, p *Post) error {
+// CreatePost inserts a new post into the database.
+func (r *postgresRepository) CreatePost(ctx context.Context, p *svcmodel.Post) error {
 	query := `INSERT INTO posts (newsletter_id, title, content, created_at) VALUES ($1, $2, $3, $4)`
-	_, err := r.db.ExecContext(ctx, query, p.NewsletterID, p.Title, p.Content, p.CreatedAt)
+	_, err := r.pool.Exec(ctx, query, p.NewsletterID, p.Title, p.Content, p.CreatedAt)
 	return err
 }
 
-func (r *postgresRepository) FindPostsByNewsletterID(ctx context.Context, newsletterID string) ([]Post, error) {
-	query := `SELECT id, newsletter_id, title, content, created_at FROM posts WHERE newsletter_id = $1 ORDER BY created_at DESC`
-	rows, err := r.db.QueryContext(ctx, query, newsletterID)
+// FindPostsByNewsletterID retrieves all posts for a specific newsletter.
+func (r *postgresRepository) FindPostsByNewsletterID(ctx context.Context, newsletterID id.Newsletter) ([]svcmodel.Post, error) {
+	query := `SELECT id, newsletter_id, title, content, created_at, published FROM posts WHERE newsletter_id = $1 ORDER BY created_at DESC`
+	rows, err := r.pool.Query(ctx, query, newsletterID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var posts []Post
+	var posts []svcmodel.Post
 	for rows.Next() {
-		var p Post
-		if err := rows.Scan(&p.ID, &p.NewsletterID, &p.Title, &p.Content, &p.CreatedAt); err != nil {
+		var p svcmodel.Post
+		if err := rows.Scan(&p.ID, &p.NewsletterID, &p.Title, &p.Content, &p.CreatedAt, &p.Published); err != nil {
 			return nil, err
 		}
 		posts = append(posts, p)
@@ -139,20 +104,23 @@ func (r *postgresRepository) FindPostsByNewsletterID(ctx context.Context, newsle
 	return posts, nil
 }
 
-func (r *postgresRepository) UpdatePost(ctx context.Context, id string, p *Post) error {
+// UpdatePost modifies an existing post in the database.
+func (r *postgresRepository) UpdatePost(ctx context.Context, id id.Post, p *svcmodel.Post) error {
 	query := `UPDATE posts SET title = $1, content = $2 WHERE id = $3`
-	_, err := r.db.ExecContext(ctx, query, p.Title, p.Content, id)
+	_, err := r.pool.Exec(ctx, query, p.Title, p.Content, id)
 	return err
 }
 
-func (r *postgresRepository) DeletePost(ctx context.Context, id string) error {
+// DeletePost removes a post from the database by its ID.
+func (r *postgresRepository) DeletePost(ctx context.Context, id id.Post) error {
 	query := `DELETE FROM posts WHERE id = $1`
-	_, err := r.db.ExecContext(ctx, query, id)
+	_, err := r.pool.Exec(ctx, query, id)
 	return err
 }
 
-func (r *postgresRepository) PublishPost(ctx context.Context, id string) error {
+// PublishPost marks a post as published in the database.
+func (r *postgresRepository) PublishPost(ctx context.Context, id id.Post) error {
 	query := `UPDATE posts SET published = TRUE WHERE id = $1`
-	_, err := r.db.ExecContext(ctx, query, id)
+	_, err := r.pool.Exec(ctx, query, id)
 	return err
 }
