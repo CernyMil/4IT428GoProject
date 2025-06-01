@@ -1,12 +1,9 @@
 package service
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
-	"fmt"
-	"net/http"
+	"time"
 
 	//"time"
 	"newsletter-service/pkg/id"
@@ -48,29 +45,30 @@ func (s *NewsletterService) CreateNewsletter(ctx context.Context, input svcmodel
 		ID:          id.NewNewsletter(),
 		Title:       input.Title,
 		Description: input.Description,
-		//CreatedAt: time.Now(),
+		CreatedAt:   time.Now(),
 	}
-	if err := s.repo.Save(ctx, n); err != nil {
-		return nil, err
-	}
+	/*
+		if err := s.repo.Save(ctx, n); err != nil {
+			return nil, err
+		}
 
-	// Notify subscriber-service about new newsletter (optional integration)
-	url := "http://subscriber-service:8083/api/v1/nginx/newsletters"
-	payload, err := json.Marshal(n.ID)
-	if err != nil {
-		return nil, err
-	}
+		// Notify subscriber-service about new newsletter (optional integration)
+		url := "http://subscriber-service:8083/api/v1/nginx/newsletters"
+		payload, err := json.Marshal(n.ID)
+		if err != nil {
+			return nil, err
+		}
 
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(payload))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
+		resp, err := http.Post(url, "application/json", bytes.NewBuffer(payload))
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("subscriber-service returned status %d", resp.StatusCode)
-	}
-
+		if resp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("subscriber-service returned status %d", resp.StatusCode)
+		}
+	*/
 	return n, nil
 }
 

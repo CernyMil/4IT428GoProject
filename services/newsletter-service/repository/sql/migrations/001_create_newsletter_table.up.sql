@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS newsletters (
 -- Create posts table
 CREATE TABLE IF NOT EXISTS posts (
     id SERIAL PRIMARY KEY,
-    newsletter_id INT NOT NULL REFERENCES newsletters(id) ON DELETE CASCADE,
+    newsletter_id UUID NOT NULL REFERENCES newsletters(id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
     created_at TIMESTAMP NOT NULL,
