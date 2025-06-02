@@ -219,7 +219,7 @@ func notifySubscriberDeleteNewsletter(newsletterID string) error {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("subscriber-service returned status %d", resp.StatusCode)
 	}
 	return nil

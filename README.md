@@ -8,7 +8,7 @@ This project is part of the course **Vývoj mikroslužeb v jazyce Go** at the Un
 
 **2. Update your environment variables for each service and docker-compose**
 
-**3. Prepare your admin credentials files**
+**3. Prepare your firebase-admin-sdk files for each service**
 
 **4. Inside the services folder execute:**
     ```
