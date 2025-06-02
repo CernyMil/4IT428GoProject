@@ -18,33 +18,11 @@ paths:
           description: Service is operational
         "400":
           description: Invalid request
-
-  "/nginx/newsletters/{newsletterId}/delete":
-    delete:
-      summary: Delete a newsletter
-      operationId: DeleteNewsletter
-      parameters:
-        - name: newsletterId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "204":
-          description: Newsletter removed successfully
-        "400":
-          description: Invalid newsletterId
-
-  "/newsletters/{newsletterId}/subscribe":
+          
+  "/subscriptions/subscribe":
     post:
       summary: Subscribe to a newsletter
       operationId: SubscribeToNewsletter
-      parameters:
-        - name: newsletterId
-          in: path
-          required: true
-          schema:
-            type: string
       requestBody:
         required: true
         content:
@@ -61,16 +39,31 @@ paths:
         "400":
           description: Invalid input
 
-  "/newsletters/{newsletterId}/unsubscribe":
-    delete:
-      summary: Unsubscribe from a newsletter
-      operationId: UnsubscribeFromNewsletter
+  "/subscriptions/confirm":
+    get:
+      summary: Confirm a subscription
+      operationId: ConfirmSubscription
       parameters:
-        - name: newsletterId
-          in: path
+        - name: token
+          in: query
           required: true
           schema:
             type: string
+      responses:
+        "200":
+          description: Subscription confirmed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subscription"
+        "400":
+          description: Invalid token
+
+  "/subscriptions/unsubscribe":
+    get:
+      summary: Unsubscribe from a newsletter
+      operationId: UnsubscribeFromNewsletter
+      parameters:
         - name: token
           in: query
           required: true
@@ -82,49 +75,47 @@ paths:
         "400":
           description: Invalid input
 
-  "/newsletters/{newsletterId}/confirm":
-    get:
-      summary: Confirm a subscription
-      operationId: ConfirmSubscription
-      parameters:
-        - name: newsletterId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: token
-          in: query
-          required: true
-          schema:
-            type: string
-      responses:
-        - name: token
-          in: query
-          required: true
-          description: Token used to confirm the subscription
-          schema:
-            type: string
-  "/nginx/newsletters/{newsletterId}/posts/{postId}/publish":
-    get:
-      summary: Send published post to subscribers
+  "/internal/publish-post":
+    post:
+      summary: Send published post to subscribers (internal)
       operationId: SendPublishedPost
-      parameters:
-        - name: newsletterId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: postId
-          in: path
-          required: true
-          schema:
-            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Post"
       responses:
         "200":
-          description: Post delivery process to subscribers has been successfully initiated
-          description: Post sent to subscribers
+          description: Post delivered to subscribers
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+        "400":
+          description: Invalid request body or validation error
+        "500":
+          description: Internal server error
+
+
+  "/internal/delete-newsletter":
+    delete:
+      summary: delete newsletter subscriptions available internally
+      operationId: DeleteNewsletterSubscriptions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              description: The newsletter ID as a JSON string, e.g. "02ce2891-1461-4b91-bb7b-35de941d5cdd"
+      responses:
+        "204":
+          description: Subscriptions deleted
         "400":
           description: Invalid request
+        "500":
+          description: Internal server error
 
 components:
   schemas:
@@ -134,31 +125,38 @@ components:
         email:
           type: string
           format: email
-      required:
-    UnsubscribeRequest:
-      type: object
-      properties:
-        email:
+        newsletter_id:
           type: string
-          format: email
       required:
         - email
-        - email
+        - newsletter_id
     Subscription:
       type: object
       properties:
         id:
           type: string
-        newsletterId:
+        newsletter_id:
           type: string
         email:
-        createdAt:
           type: string
-          format: date-time
-          description: The timestamp when the subscription was created
+        created_at:
+          type: string
           format: date-time
       required:
         - id
-        - newsletterId
+        - newsletter_id
         - email
-        - createdAt
+        - created_at
+    Post:
+      type: object
+      properties:
+        newsletter_id:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+      required:
+        - newsletter_id
+        - title
+        - content

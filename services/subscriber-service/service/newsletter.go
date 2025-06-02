@@ -6,6 +6,7 @@ import (
 	"subscriber-service/pkg/id"
 )
 
+/*
 func (s Service) CreateNewsletter(ctx context.Context, newsletterId id.Newsletter) error {
 	err := s.repository.CreateNewsletter(ctx, newsletterId)
 	if err != nil {
@@ -13,9 +14,10 @@ func (s Service) CreateNewsletter(ctx context.Context, newsletterId id.Newslette
 	}
 	return err
 }
+*/
 
-func (s Service) DeleteNewsletter(ctx context.Context, newsletterId id.Newsletter) error {
-	err := s.repository.DeleteNewsletter(ctx, newsletterId)
+func (s Service) DeleteNewsletterSubscriptions(ctx context.Context, newsletterId id.Newsletter) error {
+	err := s.repository.DeleteNewsletterSubscriptions(ctx, newsletterId)
 	if err != nil {
 		return err
 	}

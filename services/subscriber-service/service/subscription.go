@@ -3,8 +3,10 @@ package service
 import (
 	"context"
 	"embed"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"time"
 
@@ -21,12 +23,31 @@ var validate = validator.New()
 
 // SubscribeToNewsletter - subscribes a user to a newsletter and sends a confirmation request email.
 func (s Service) SubscribeToNewsletter(ctx context.Context, subReq svcmodel.SubscribeRequest) error {
-	newsletter, err := s.repository.GetNewsletterById(ctx, subReq.NewsletterID)
-	if err != nil {
-		return fmt.Errorf("failed to get newsletter by ID: %w", err)
-	}
 
-	if newsletter == (id.Newsletter{}) {
+	// check if newsletter exists
+	/*
+		newsletter, err := s.repository.GetNewsletterById(ctx, subReq.NewsletterID)
+		if err != nil {
+			return fmt.Errorf("failed to get newsletter by ID: %w", err)
+		}
+		if newsletter == (id.Newsletter{}) {
+			return fmt.Errorf("newsletter with ID %s does not exist", subReq.NewsletterID)
+		}
+	*/
+
+	// Fetch all newsletters to check if the requested newsletter exists
+	newsletters, err := getNewsletters(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get newsletters: %w", err)
+	}
+	found := false
+	for _, n := range newsletters {
+		if n.NewsletterID == subReq.NewsletterID.String() {
+			found = true
+			break
+		}
+	}
+	if !found {
 		return fmt.Errorf("newsletter with ID %s does not exist", subReq.NewsletterID)
 	}
 
@@ -41,6 +62,7 @@ func (s Service) SubscribeToNewsletter(ctx context.Context, subReq svcmodel.Subs
 		}
 	}
 
+	// Generate a token for the subscription confirmation request
 	claims := map[string]interface{}{
 		"email":        subReq.Email,
 		"newsletterId": subReq.NewsletterID,
@@ -223,4 +245,32 @@ func sendConfirmationMail(email string, token string) error {
 	}
 
 	return nil
+}
+
+func getNewsletters(ctx context.Context) ([]svcmodel.Newsletter, error) {
+	url := "http://nginx:80/newsletter-service/newsletters/internal"
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+os.Getenv("SERVICE_TOKEN"))
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("newsletter-service returned status %d", resp.StatusCode)
+	}
+
+	var newsletters []svcmodel.Newsletter
+	if err := json.NewDecoder(resp.Body).Decode(&newsletters); err != nil {
+		return nil, fmt.Errorf("failed to decode newsletters: %w", err)
+	}
+
+	return newsletters, nil
 }

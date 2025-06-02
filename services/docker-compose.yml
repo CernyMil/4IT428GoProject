@@ -38,12 +38,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8081"
-    environment:
-      PORT: 8081
-      DATABASE_URL: postgres://user:password@postgres_editor:5432/editordatabase
-      FIREBASE_CRED: "/app/firebase-admin-sdk.json"
     env_file:
-      - editor-service/.env
+      - ./editor-service/.env
 
   newsletter-service:
     build:
@@ -51,6 +47,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8082"
+    env_file:
+      - ./editor-service/.env
     environment:
       PORT: 8082
       DATABASE_URL: postgres://user:password@postgres_newsletter:5432/newsletterdatabase
@@ -67,15 +65,8 @@ services:
       dockerfile: Dockerfile
     expose:
       - "8083"
-    environment:
-      PORT: 8083
-      SERVICE_ACCOUNT: "/app/firebase-admin-sdk.json"
-      EMAIL_ADDRESS: "Acme <onboarding@resend.dev>"
-      RESEND_API_KEY: "re_37p9fSD2_FCSyR7zNE7utrW9jcs2sNcbA"
-      BASE_URL: "http://localhost:8080"
-      NEWSLETTER_JWT_SECRET: "07NPTodeCZnLhoUU9W2AmKREmVrIHc2+5VZpuZhbeZk="
-      SERVICE_TOKEN: "uhQq9NNRO6eK0bHykgfc6jNQ5piumqO0nRvA8cxqw1U="
-
+    env_file:
+      - ./subscriber-service/.env
   migrate-editor:
     image: migrate/migrate
     volumes:

@@ -32,7 +32,7 @@ func (s Service) SendPublishedPost(ctx context.Context, post model.Post) error {
 		html, err := mail.PrepareHTMLFromBytes(templateContent, svcmodel.PostHTML{
 			Email:           info.Email,
 			Title:           post.Title,
-			Content:         post.Body,
+			Content:         post.Content,
 			UnsubscribeLink: baseUrl + "/subscriber-service/api/v1/subscriptions" + "/unsubscribe?token=" + info.Token,
 		})
 		if err != nil {
