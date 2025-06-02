@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS newsletters (
 
 -- Create posts table
 CREATE TABLE IF NOT EXISTS posts (
-    id SERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     newsletter_id UUID NOT NULL REFERENCES newsletters(id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
