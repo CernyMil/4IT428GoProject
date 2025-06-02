@@ -431,7 +431,7 @@
 			"response": []
 		},
 		{
-			"name": "http://localhost:8080/newsletter-service/newsletters/{newsletter_id}/posts/{post_id}/publish",
+			"name": "newsletter-service/newsletters/{newsletter_id}/posts/{post_id}/publish",
 			"request": {
 				"auth": {
 					"type": "bearer",
