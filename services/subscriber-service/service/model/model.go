@@ -31,5 +31,5 @@ type UnsubscribeRequest struct {
 }
 
 type Newsletter struct {
-	NewsletterID string `json:"newsletter_id"`
+	ID string `json:"id"`
 }
