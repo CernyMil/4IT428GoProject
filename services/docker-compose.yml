@@ -20,6 +20,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_editor_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d editordatabase"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   postgres_newsletter:
     image: postgres:latest
@@ -31,6 +36,11 @@ services:
       - "5433:5432"
     volumes:
       - postgres_newsletter_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d newsletterdatabase"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   editor-service:
     build:
@@ -78,7 +88,8 @@ services:
       "up"
     ]
     depends_on:
-      - postgres_editor
+        postgres_editor:
+          condition: service_healthy
 
   migrate-newsletter:
     image: migrate/migrate
@@ -91,7 +102,8 @@ services:
       "up"
     ]
     depends_on:
-      - postgres_newsletter
+        postgres_newsletter:
+          condition: service_healthy
 
 volumes:
   postgres_editor_data:
