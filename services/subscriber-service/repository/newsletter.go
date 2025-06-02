@@ -11,21 +11,6 @@ import (
 	"subscriber-service/pkg/id"
 )
 
-/*
-	func (r *Repository) CreateNewsletter(ctx context.Context, newsletterId id.Newsletter) error {
-		client := r.client
-
-		newsletter := map[string]interface{}{
-			"id": newsletterId.String(),
-		}
-
-		_, err := client.Collection("subscription_service_newsletters").Doc(newsletterId.String()).Create(ctx, newsletter)
-		if err != nil {
-			return err
-		}
-		return nil
-	}
-*/
 func (r *Repository) GetNewsletterById(ctx context.Context, newsletterId id.Newsletter) (id.Newsletter, error) {
 	client := r.client
 	_, err := client.Collection("subscription_service_newsletters").Doc(newsletterId.String()).Get(ctx)
@@ -45,13 +30,7 @@ func (r *Repository) DeleteNewsletterSubscriptions(ctx context.Context, newslett
 	if err != nil {
 		return err
 	}
-
-	_, err = client.Collection("subscription_service_newsletters").Doc(newsletterId.String()).Delete(ctx)
-	if err != nil {
-		return err
-	}
 	return nil
-
 }
 
 func deleteSubscriptionsForNewsletter(ctx context.Context, client *firestore.Client, newsletterId string, batchSize int) error {
