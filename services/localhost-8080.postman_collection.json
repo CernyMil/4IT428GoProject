@@ -1,0 +1,468 @@
+{
+	"info": {
+		"_postman_id": "4fa4aafc-107c-4369-b1d1-a7753dc9f5ba",
+		"name": "localhost:8080",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "45277833",
+		"_collection_link": "https://alena-4938156.postman.co/workspace/d62d71fe-0e23-4e6d-8f92-b839002b4ff7/collection/45277833-4fa4aafc-107c-4369-b1d1-a7753dc9f5ba?action=share&source=collection_link&creator=45277833"
+	},
+	"item": [
+		{
+			"name": "ping",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/ping",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"ping"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "subscriber-service/ping",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/subscriber-service/ping",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"subscriber-service",
+						"ping"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "editor-service/signup",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"random.email@test.cz\", \r\n    \"password\": \"mypassword\",\r\n    \"first_name\": \"All\",\r\n    \"last_name\": \"ien\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/editor-service/signup",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"editor-service",
+						"signup"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "editor-service/signin",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"random.email@test.cz\", \r\n    \"password\": \"mypassword\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/editor-service/signin",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"editor-service",
+						"signin"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "editor-service/change-password",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"random.email@test.cz\", \r\n    \"new_password\": \"newpassword\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/editor-service/change-password",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"editor-service",
+						"change-password"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "newsletter-service/newsletters",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjZlODk1YzQ3YTA0YzVmNmRlMzExMmFmZjE2ODFhMzUwNzdkMWNjZDQiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vZ29wcm9qZWN0LTRjOTQ5IiwiYXVkIjoiZ29wcm9qZWN0LTRjOTQ5IiwiYXV0aF90aW1lIjoxNzQ4ODg3MDM3LCJ1c2VyX2lkIjoiemJEaWdiOGxsOFlGRWczSkF2SVBDUmZmNnlIMyIsInN1YiI6InpiRGlnYjhsbDhZRkVnM0pBdklQQ1JmZjZ5SDMiLCJpYXQiOjE3NDg4ODcwMzcsImV4cCI6MTc0ODg5MDYzNywiZW1haWwiOiJhbGwuaWVuQGVtYWlsLmN6IiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImVtYWlsIjpbImFsbC5pZW5AZW1haWwuY3oiXX0sInNpZ25faW5fcHJvdmlkZXIiOiJwYXNzd29yZCJ9fQ.DK9Wjf_ceo6BwE-nplpunSDZaJmXJw3kIP2_VyfLOtlZVXNdwrzmX0qW_h5JTU8a1MPatpTQkxtyMHzhtqrAx0IXAh7hXMckEo-155u4QIz-Y_TbXZO6hgY2dgYOlLEkzD_23RZdbuJckBf_LlJ2fskif_20CUfe60HY_pTKTC8PHxG94J8bvOD9CptyZaERvu85T8l0udnnfS8EjrQL32mWPMdvA9UDB9rHeMNVxQwx6zlNK4fYDWcM76GG_lxLP4JY1O0SB6gtlR1_IL_THA0oauJCUQcCSPU_DIo4SedmsAhlE-zvpCUaUTTJKlDlLRjmRS8TteJAMwSjwhb6HA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"title\": \"My Newsletter\",\r\n  \"description\": \"This is a new newsletter.\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/newsletter-service/newsletters",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"newsletter-service",
+						"newsletters"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "newsletter-service/newsletters/{newsletter_id}",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjZlODk1YzQ3YTA0YzVmNmRlMzExMmFmZjE2ODFhMzUwNzdkMWNjZDQiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vZ29wcm9qZWN0LTRjOTQ5IiwiYXVkIjoiZ29wcm9qZWN0LTRjOTQ5IiwiYXV0aF90aW1lIjoxNzQ4ODYyNTk4LCJ1c2VyX2lkIjoiemJEaWdiOGxsOFlGRWczSkF2SVBDUmZmNnlIMyIsInN1YiI6InpiRGlnYjhsbDhZRkVnM0pBdklQQ1JmZjZ5SDMiLCJpYXQiOjE3NDg4NjI1OTgsImV4cCI6MTc0ODg2NjE5OCwiZW1haWwiOiJhbGwuaWVuQGVtYWlsLmN6IiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImVtYWlsIjpbImFsbC5pZW5AZW1haWwuY3oiXX0sInNpZ25faW5fcHJvdmlkZXIiOiJwYXNzd29yZCJ9fQ.ahxbYRmdeqpEyk7eYTW2dgV3EcnRi6FCXIarLUKocrFvie_txjey2BuL3RvippoiggZ-J3zHSi16uglopy52xF37Dbqm2JSlIpuBWyQhXQDg3aoNGgPs_FbTzfHtwDFIbBpQFiHLSZ_3QOjRK4g0bJzPyux7ESobadekCiJ-5wny8iK8KFU1uZOpmLkAC46x4DETMpyPv9s_cddzQj0YaEAohXdAAWqi4STqV-SeRx0J03TZ6wjcMwPFmUOdx-dDH8bZQlfCyjaDjsAjytBZilNBgOWfdbZEAwfy2_ToYdvY9f0tjiTDW-RjiaCHK4L94hhFya0cjpwlrtoBymhMcA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"title\": \"My updated Newsletter\",\r\n  \"description\": \"This is a updated newsletter.\"\r\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/newsletter-service/newsletters/ec3fc67d-4b47-4f31-8a85-7fbafc98de95",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"newsletter-service",
+						"newsletters",
+						"ec3fc67d-4b47-4f31-8a85-7fbafc98de95"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "newsletter-service/newsletters",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjZlODk1YzQ3YTA0YzVmNmRlMzExMmFmZjE2ODFhMzUwNzdkMWNjZDQiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vZ29wcm9qZWN0LTRjOTQ5IiwiYXVkIjoiZ29wcm9qZWN0LTRjOTQ5IiwiYXV0aF90aW1lIjoxNzQ4ODg3MDM3LCJ1c2VyX2lkIjoiemJEaWdiOGxsOFlGRWczSkF2SVBDUmZmNnlIMyIsInN1YiI6InpiRGlnYjhsbDhZRkVnM0pBdklQQ1JmZjZ5SDMiLCJpYXQiOjE3NDg4ODcwMzcsImV4cCI6MTc0ODg5MDYzNywiZW1haWwiOiJhbGwuaWVuQGVtYWlsLmN6IiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImVtYWlsIjpbImFsbC5pZW5AZW1haWwuY3oiXX0sInNpZ25faW5fcHJvdmlkZXIiOiJwYXNzd29yZCJ9fQ.DK9Wjf_ceo6BwE-nplpunSDZaJmXJw3kIP2_VyfLOtlZVXNdwrzmX0qW_h5JTU8a1MPatpTQkxtyMHzhtqrAx0IXAh7hXMckEo-155u4QIz-Y_TbXZO6hgY2dgYOlLEkzD_23RZdbuJckBf_LlJ2fskif_20CUfe60HY_pTKTC8PHxG94J8bvOD9CptyZaERvu85T8l0udnnfS8EjrQL32mWPMdvA9UDB9rHeMNVxQwx6zlNK4fYDWcM76GG_lxLP4JY1O0SB6gtlR1_IL_THA0oauJCUQcCSPU_DIo4SedmsAhlE-zvpCUaUTTJKlDlLRjmRS8TteJAMwSjwhb6HA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/newsletter-service/newsletters",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"newsletter-service",
+						"newsletters"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "newsletter-service/newsletters/{newsletter_id}",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjZlODk1YzQ3YTA0YzVmNmRlMzExMmFmZjE2ODFhMzUwNzdkMWNjZDQiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vZ29wcm9qZWN0LTRjOTQ5IiwiYXVkIjoiZ29wcm9qZWN0LTRjOTQ5IiwiYXV0aF90aW1lIjoxNzQ4ODg3MDM3LCJ1c2VyX2lkIjoiemJEaWdiOGxsOFlGRWczSkF2SVBDUmZmNnlIMyIsInN1YiI6InpiRGlnYjhsbDhZRkVnM0pBdklQQ1JmZjZ5SDMiLCJpYXQiOjE3NDg4ODcwMzcsImV4cCI6MTc0ODg5MDYzNywiZW1haWwiOiJhbGwuaWVuQGVtYWlsLmN6IiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImVtYWlsIjpbImFsbC5pZW5AZW1haWwuY3oiXX0sInNpZ25faW5fcHJvdmlkZXIiOiJwYXNzd29yZCJ9fQ.DK9Wjf_ceo6BwE-nplpunSDZaJmXJw3kIP2_VyfLOtlZVXNdwrzmX0qW_h5JTU8a1MPatpTQkxtyMHzhtqrAx0IXAh7hXMckEo-155u4QIz-Y_TbXZO6hgY2dgYOlLEkzD_23RZdbuJckBf_LlJ2fskif_20CUfe60HY_pTKTC8PHxG94J8bvOD9CptyZaERvu85T8l0udnnfS8EjrQL32mWPMdvA9UDB9rHeMNVxQwx6zlNK4fYDWcM76GG_lxLP4JY1O0SB6gtlR1_IL_THA0oauJCUQcCSPU_DIo4SedmsAhlE-zvpCUaUTTJKlDlLRjmRS8TteJAMwSjwhb6HA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/newsletter-service/newsletters/ec3fc67d-4b47-4f31-8a85-7fbafc98de95",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"newsletter-service",
+						"newsletters",
+						"ec3fc67d-4b47-4f31-8a85-7fbafc98de95"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "newsletter-service/newsletters/{newsletter_id}/posts",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjZlODk1YzQ3YTA0YzVmNmRlMzExMmFmZjE2ODFhMzUwNzdkMWNjZDQiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vZ29wcm9qZWN0LTRjOTQ5IiwiYXVkIjoiZ29wcm9qZWN0LTRjOTQ5IiwiYXV0aF90aW1lIjoxNzQ4ODgxMzUxLCJ1c2VyX2lkIjoiemJEaWdiOGxsOFlGRWczSkF2SVBDUmZmNnlIMyIsInN1YiI6InpiRGlnYjhsbDhZRkVnM0pBdklQQ1JmZjZ5SDMiLCJpYXQiOjE3NDg4ODEzNTEsImV4cCI6MTc0ODg4NDk1MSwiZW1haWwiOiJhbGwuaWVuQGVtYWlsLmN6IiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImVtYWlsIjpbImFsbC5pZW5AZW1haWwuY3oiXX0sInNpZ25faW5fcHJvdmlkZXIiOiJwYXNzd29yZCJ9fQ.Uy-sq3WTKpbp3k5Tw_UVtjUWNx5lBJgMXf5v8QYLENKJ-3EDxwTmXNf8V9p6AgkPlRrEoeJM_gO6B9NgOcB4D6XRQagWlEYfWKetTJWtUjF9Qh9LvLYa4_j93JuBfLhaMUq5jhlgwFbGRh3nlQjItmlLkzmZ2E7bQnlTkj2YFJAqFP-tVVZgMAN43MozU9WRqjBawhLS6StuQDKqmCYFSoamtt1M_kJrjTtDhY7zwGYUBYxy9x-3Sag8A8oB0R3FNYmvS4iF5eqLA6QMXWl8ogTEl6WbrEmuRKn_ipGMd99pp5_KQ_-gFdPR5RPw0azP8NvSRMhGnvGlmsGbCRQcZg",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"title\": \"My Updated First Post\",\r\n  \"content\": \"This is the content of my updated first post.\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/newsletter-service/newsletters/ec3fc67d-4b47-4f31-8a85-7fbafc98de95/posts",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"newsletter-service",
+						"newsletters",
+						"ec3fc67d-4b47-4f31-8a85-7fbafc98de95",
+						"posts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "newsletter-service/newsletters/{newsletter_id}/posts/{post_id}",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjZlODk1YzQ3YTA0YzVmNmRlMzExMmFmZjE2ODFhMzUwNzdkMWNjZDQiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vZ29wcm9qZWN0LTRjOTQ5IiwiYXVkIjoiZ29wcm9qZWN0LTRjOTQ5IiwiYXV0aF90aW1lIjoxNzQ4ODg3MDM3LCJ1c2VyX2lkIjoiemJEaWdiOGxsOFlGRWczSkF2SVBDUmZmNnlIMyIsInN1YiI6InpiRGlnYjhsbDhZRkVnM0pBdklQQ1JmZjZ5SDMiLCJpYXQiOjE3NDg4ODcwMzcsImV4cCI6MTc0ODg5MDYzNywiZW1haWwiOiJhbGwuaWVuQGVtYWlsLmN6IiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImVtYWlsIjpbImFsbC5pZW5AZW1haWwuY3oiXX0sInNpZ25faW5fcHJvdmlkZXIiOiJwYXNzd29yZCJ9fQ.DK9Wjf_ceo6BwE-nplpunSDZaJmXJw3kIP2_VyfLOtlZVXNdwrzmX0qW_h5JTU8a1MPatpTQkxtyMHzhtqrAx0IXAh7hXMckEo-155u4QIz-Y_TbXZO6hgY2dgYOlLEkzD_23RZdbuJckBf_LlJ2fskif_20CUfe60HY_pTKTC8PHxG94J8bvOD9CptyZaERvu85T8l0udnnfS8EjrQL32mWPMdvA9UDB9rHeMNVxQwx6zlNK4fYDWcM76GG_lxLP4JY1O0SB6gtlR1_IL_THA0oauJCUQcCSPU_DIo4SedmsAhlE-zvpCUaUTTJKlDlLRjmRS8TteJAMwSjwhb6HA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"title\": \"My First Post\",\r\n  \"content\": \"This is the content of my first post.\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/newsletter-service/newsletters/dadad-468f-4a2d-bce6-be72d5b2960c/posts/f8c67696-ea3c-4ed1-a641-de8c4723a021",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"newsletter-service",
+						"newsletters",
+						"dadad-468f-4a2d-bce6-be72d5b2960c",
+						"posts",
+						"f8c67696-ea3c-4ed1-a641-de8c4723a021"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "newsletter-service/newsletters/{newsletter_id}/posts",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjZlODk1YzQ3YTA0YzVmNmRlMzExMmFmZjE2ODFhMzUwNzdkMWNjZDQiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vZ29wcm9qZWN0LTRjOTQ5IiwiYXVkIjoiZ29wcm9qZWN0LTRjOTQ5IiwiYXV0aF90aW1lIjoxNzQ4ODgxMzUxLCJ1c2VyX2lkIjoiemJEaWdiOGxsOFlGRWczSkF2SVBDUmZmNnlIMyIsInN1YiI6InpiRGlnYjhsbDhZRkVnM0pBdklQQ1JmZjZ5SDMiLCJpYXQiOjE3NDg4ODEzNTEsImV4cCI6MTc0ODg4NDk1MSwiZW1haWwiOiJhbGwuaWVuQGVtYWlsLmN6IiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImVtYWlsIjpbImFsbC5pZW5AZW1haWwuY3oiXX0sInNpZ25faW5fcHJvdmlkZXIiOiJwYXNzd29yZCJ9fQ.Uy-sq3WTKpbp3k5Tw_UVtjUWNx5lBJgMXf5v8QYLENKJ-3EDxwTmXNf8V9p6AgkPlRrEoeJM_gO6B9NgOcB4D6XRQagWlEYfWKetTJWtUjF9Qh9LvLYa4_j93JuBfLhaMUq5jhlgwFbGRh3nlQjItmlLkzmZ2E7bQnlTkj2YFJAqFP-tVVZgMAN43MozU9WRqjBawhLS6StuQDKqmCYFSoamtt1M_kJrjTtDhY7zwGYUBYxy9x-3Sag8A8oB0R3FNYmvS4iF5eqLA6QMXWl8ogTEl6WbrEmuRKn_ipGMd99pp5_KQ_-gFdPR5RPw0azP8NvSRMhGnvGlmsGbCRQcZg",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/newsletter-service/newsletters/396b5d05-468f-4a2d-bce6-be72d5b2960c/posts",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"newsletter-service",
+						"newsletters",
+						"396b5d05-468f-4a2d-bce6-be72d5b2960c",
+						"posts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "subscriber-service/subscriptions/subscribe",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"newsletter_id\": \"396b5d05-468f-4a2d-bce6-be72d5b2960c\",\r\n    \"email\": \"mypersonalemail@seznam.cz\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/subscriber-service/api/v1/subscriptions/subscribe",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"subscriber-service",
+						"api",
+						"v1",
+						"subscriptions",
+						"subscribe"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/newsletter-service/newsletters/{newsletter_id}/posts/{post_id}/publish",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjZlODk1YzQ3YTA0YzVmNmRlMzExMmFmZjE2ODFhMzUwNzdkMWNjZDQiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vZ29wcm9qZWN0LTRjOTQ5IiwiYXVkIjoiZ29wcm9qZWN0LTRjOTQ5IiwiYXV0aF90aW1lIjoxNzQ4ODgxMzUxLCJ1c2VyX2lkIjoiemJEaWdiOGxsOFlGRWczSkF2SVBDUmZmNnlIMyIsInN1YiI6InpiRGlnYjhsbDhZRkVnM0pBdklQQ1JmZjZ5SDMiLCJpYXQiOjE3NDg4ODEzNTEsImV4cCI6MTc0ODg4NDk1MSwiZW1haWwiOiJhbGwuaWVuQGVtYWlsLmN6IiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImVtYWlsIjpbImFsbC5pZW5AZW1haWwuY3oiXX0sInNpZ25faW5fcHJvdmlkZXIiOiJwYXNzd29yZCJ9fQ.Uy-sq3WTKpbp3k5Tw_UVtjUWNx5lBJgMXf5v8QYLENKJ-3EDxwTmXNf8V9p6AgkPlRrEoeJM_gO6B9NgOcB4D6XRQagWlEYfWKetTJWtUjF9Qh9LvLYa4_j93JuBfLhaMUq5jhlgwFbGRh3nlQjItmlLkzmZ2E7bQnlTkj2YFJAqFP-tVVZgMAN43MozU9WRqjBawhLS6StuQDKqmCYFSoamtt1M_kJrjTtDhY7zwGYUBYxy9x-3Sag8A8oB0R3FNYmvS4iF5eqLA6QMXWl8ogTEl6WbrEmuRKn_ipGMd99pp5_KQ_-gFdPR5RPw0azP8NvSRMhGnvGlmsGbCRQcZg",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/newsletter-service/newsletters/396b5d05-468f-4a2d-bce6-be72d5b2960c/posts/f8c67696-ea3c-4ed1-a641-de8c4723a021/publish",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"newsletter-service",
+						"newsletters",
+						"396b5d05-468f-4a2d-bce6-be72d5b2960c",
+						"posts",
+						"f8c67696-ea3c-4ed1-a641-de8c4723a021",
+						"publish"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
