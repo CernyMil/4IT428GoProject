@@ -5,6 +5,7 @@ import (
 	"newsletter-service/pkg/id"
 	svcmodel "newsletter-service/service/model"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -38,9 +39,16 @@ func (r *postgresRepository) FindAll(ctx context.Context) ([]svcmodel.Newsletter
 	var newsletters []svcmodel.Newsletter
 	for rows.Next() {
 		var n svcmodel.Newsletter
-		if err := rows.Scan(&n.ID, &n.Title, &n.Description, &n.CreatedAt); err != nil {
+		var idStr string // Temporary variable to hold the UUID as a string
+		if err := rows.Scan(&idStr, &n.Title, &n.Description, &n.CreatedAt); err != nil {
 			return nil, err
 		}
+		// Parse the UUID string into id.Newsletter
+		parsedID, err := uuid.Parse(idStr)
+		if err != nil {
+			return nil, err
+		}
+		n.ID = id.Newsletter(parsedID) // Convert uuid.UUID to id.Newsletter
 		newsletters = append(newsletters, n)
 	}
 	return newsletters, nil
