@@ -39,7 +39,6 @@ func (h *Handler) initRouter() {
 		r.Route("/internal", func(r chi.Router) {
 			r.Post("/publish-post", h.SendPublishedPost)
 			r.Delete("/delete-newsletter", h.DeleteNewsletterSubscriptions)
-			//r.Post("/create", h.CreateNewsletter)
 		})
 	})
 
