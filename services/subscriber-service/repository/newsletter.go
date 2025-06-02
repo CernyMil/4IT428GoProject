@@ -11,20 +11,21 @@ import (
 	"subscriber-service/pkg/id"
 )
 
-func (r *Repository) CreateNewsletter(ctx context.Context, newsletterId id.Newsletter) error {
-	client := r.client
+/*
+	func (r *Repository) CreateNewsletter(ctx context.Context, newsletterId id.Newsletter) error {
+		client := r.client
 
-	newsletter := map[string]interface{}{
-		"id": newsletterId.String(),
+		newsletter := map[string]interface{}{
+			"id": newsletterId.String(),
+		}
+
+		_, err := client.Collection("subscription_service_newsletters").Doc(newsletterId.String()).Create(ctx, newsletter)
+		if err != nil {
+			return err
+		}
+		return nil
 	}
-
-	_, err := client.Collection("subscription_service_newsletters").Doc(newsletterId.String()).Create(ctx, newsletter)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
+*/
 func (r *Repository) GetNewsletterById(ctx context.Context, newsletterId id.Newsletter) (id.Newsletter, error) {
 	client := r.client
 	_, err := client.Collection("subscription_service_newsletters").Doc(newsletterId.String()).Get(ctx)
@@ -38,7 +39,7 @@ func (r *Repository) GetNewsletterById(ctx context.Context, newsletterId id.News
 	return newsletterId, nil
 }
 
-func (r *Repository) DeleteNewsletter(ctx context.Context, newsletterId id.Newsletter) error {
+func (r *Repository) DeleteNewsletterSubscriptions(ctx context.Context, newsletterId id.Newsletter) error {
 	client := r.client
 	err := deleteSubscriptionsForNewsletter(ctx, client, newsletterId.String(), 1000)
 	if err != nil {

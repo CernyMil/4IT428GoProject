@@ -1,11 +1,15 @@
 package service
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
+	"net/http"
+	"os"
 	"time"
 
-	//"time"
 	"newsletter-service/pkg/id"
 	svcmodel "newsletter-service/service/model"
 )
@@ -47,28 +51,11 @@ func (s *NewsletterService) CreateNewsletter(ctx context.Context, input svcmodel
 		Description: input.Description,
 		CreatedAt:   time.Now(),
 	}
-	/*
-		if err := s.repo.Save(ctx, n); err != nil {
-			return nil, err
-		}
 
-		// Notify subscriber-service about new newsletter (optional integration)
-		url := "http://subscriber-service:8083/api/v1/nginx/newsletters"
-		payload, err := json.Marshal(n.ID)
-		if err != nil {
-			return nil, err
-		}
+	if err := s.repo.Save(ctx, n); err != nil {
+		return nil, err
+	}
 
-		resp, err := http.Post(url, "application/json", bytes.NewBuffer(payload))
-		if err != nil {
-			return nil, err
-		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode != http.StatusOK {
-			return nil, fmt.Errorf("subscriber-service returned status %d", resp.StatusCode)
-		}
-	*/
 	return n, nil
 }
 
@@ -87,7 +74,13 @@ func (s *NewsletterService) UpdateNewsletter(ctx context.Context, newsletterID i
 
 // DeleteNewsletter deletes a newsletter by ID.
 func (s *NewsletterService) DeleteNewsletter(ctx context.Context, newsletterID id.Newsletter) error {
+
+	if err := notifySubscriberDeleteNewsletter(newsletterID.String()); err != nil {
+		return fmt.Errorf("failed to notify subscriber service: %w", err)
+	}
+
 	return s.repo.Delete(ctx, newsletterID)
+
 }
 
 // CreatePost creates a new post for a newsletter.
@@ -101,8 +94,8 @@ func (s *NewsletterService) CreatePost(ctx context.Context, newsletterID id.News
 		NewsletterID: newsletterID,
 		Title:        input.Title,
 		Content:      input.Content,
-		//CreatedAt:    time.Now(),
-		Published: false,
+		CreatedAt:    time.Now(),
+		Published:    false,
 	}
 
 	if err := s.repo.CreatePost(ctx, p); err != nil {
@@ -138,4 +131,96 @@ func (s *NewsletterService) UpdatePost(ctx context.Context, newsletterID id.News
 // DeletePost deletes a post by ID.
 func (s *NewsletterService) DeletePost(ctx context.Context, newsletterID id.Newsletter, postID id.Post) error {
 	return s.repo.DeletePost(ctx, postID)
+}
+
+func (s *NewsletterService) PublishPost(ctx context.Context, newsletterID id.Newsletter, postID id.Post) (*svcmodel.Post, error) {
+	posts, err := s.repo.FindPostsByNewsletterID(ctx, newsletterID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch posts for newsletter %s: %w", newsletterID, err)
+	}
+
+	var retrievedPost *svcmodel.Post
+	for _, post := range posts {
+		if post.ID == postID {
+			retrievedPost = &post
+			break
+		}
+	}
+	if retrievedPost == nil {
+		return nil, fmt.Errorf("post with ID %s not found in newsletter %s", postID, newsletterID)
+	}
+
+	retrievedPost.Published = true
+
+	if err := s.repo.UpdatePost(ctx, postID, retrievedPost); err != nil {
+		return nil, fmt.Errorf("failed to update post status: %w", err)
+	}
+
+	// Notify subscriber service about the published post
+	postToPublish := svcmodel.PostToPublish{
+		NewsletterID: retrievedPost.NewsletterID.String(),
+		Title:        retrievedPost.Title,
+		Content:      retrievedPost.Content,
+	}
+	if err := notifySubscriberSendPublishedPost(postToPublish); err != nil {
+		return nil, err
+	}
+
+	return retrievedPost, nil
+}
+
+func notifySubscriberSendPublishedPost(post svcmodel.PostToPublish) error {
+	url := "http://nginx:80/subscriber-service/api/v1/internal/publish-post"
+
+	payload, err := json.Marshal(post)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(payload))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	serviceToken := os.Getenv("SERVICE_TOKEN")
+	req.Header.Set("Authorization", "Bearer "+serviceToken)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("subscriber-service returned status %d", resp.StatusCode)
+	}
+	return nil
+}
+
+func notifySubscriberDeleteNewsletter(newsletterID string) error {
+	url := "http://nginx:80/subscriber-service/api/v1/internal/delete-newsletter"
+
+	payload, err := json.Marshal(newsletterID)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, url, bytes.NewBuffer(payload))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	serviceToken := os.Getenv("SERVICE_TOKEN")
+	req.Header.Set("Authorization", "Bearer "+serviceToken)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("subscriber-service returned status %d", resp.StatusCode)
+	}
+	return nil
 }

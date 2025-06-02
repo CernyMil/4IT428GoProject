@@ -37,9 +37,9 @@ func (h *Handler) initRouter() {
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.InternalOnlyMiddleware(h.Config.ServiceToken))
 		r.Route("/internal", func(r chi.Router) {
-			r.Post("/publish", h.SendPublishedPost)
-			r.Delete("/delete", h.DeleteNewsletter)
-			r.Post("/create", h.CreateNewsletter)
+			r.Post("/publish-post", h.SendPublishedPost)
+			r.Delete("/delete-newsletter", h.DeleteNewsletterSubscriptions)
+			//r.Post("/create", h.CreateNewsletter)
 		})
 	})
 

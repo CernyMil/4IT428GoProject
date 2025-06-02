@@ -16,4 +16,5 @@ type NewsletterService interface {
 	ListPosts(ctx context.Context, newsletterID id.Newsletter) ([]svcmodel.Post, error)
 	UpdatePost(ctx context.Context, newsletterID id.Newsletter, postID id.Post, input svcmodel.UpdatePostInput) (*svcmodel.Post, error)
 	DeletePost(ctx context.Context, newsletterID id.Newsletter, postID id.Post) error
+	PublishPost(ctx context.Context, newsletterID id.Newsletter, postID id.Post) (*svcmodel.Post, error)
 }

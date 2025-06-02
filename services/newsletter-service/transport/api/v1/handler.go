@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 
 	id "newsletter-service/pkg/id"
 	"newsletter-service/service"
@@ -38,11 +39,13 @@ func NewHandler(
 func (h *Handler) initRouter() {
 	r := chi.NewRouter()
 
+	serviceToken := os.Getenv("SERVICE_TOKEN")
 	authenticate := h.authenticator.Authenticate
 
 	r.Route("/newsletters", func(r chi.Router) {
 		r.With(authenticate).Post("/", h.CreateNewsletter)
 		r.With(authenticate).Get("/", h.ListNewsletters)
+		r.With(middleware.InternalOnlyMiddleware(serviceToken)).Get("/internal", h.ListNewsletters)
 		r.With(authenticate).Put("/{id}", h.UpdateNewsletter)
 		r.With(authenticate).Delete("/{id}", h.DeleteNewsletter)
 
@@ -51,6 +54,7 @@ func (h *Handler) initRouter() {
 			r.With(authenticate).Get("/", h.ListPosts)
 			r.With(authenticate).Put("/{postID}", h.UpdatePost)
 			r.With(authenticate).Delete("/{postID}", h.DeletePost)
+			r.With(authenticate).Post("/{postID}/publish", h.PublishPost)
 		})
 	})
 
@@ -265,4 +269,34 @@ func (h *Handler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handler) PublishPost(w http.ResponseWriter, r *http.Request) {
+	newsletterIDStr := chi.URLParam(r, "id")
+	postIDStr := chi.URLParam(r, "postID")
+	if newsletterIDStr == "" || postIDStr == "" {
+		http.Error(w, `{"error": "missing newsletter or post ID"}`, http.StatusBadRequest)
+		return
+	}
+
+	var newsletterID id.Newsletter
+	if err := newsletterID.FromString(newsletterIDStr); err != nil {
+		http.Error(w, `{"error": "invalid newsletter ID"}`, http.StatusBadRequest)
+		return
+	}
+
+	var postID id.Post
+	if err := postID.FromString(postIDStr); err != nil {
+		http.Error(w, `{"error": "invalid post ID"}`, http.StatusBadRequest)
+		return
+	}
+
+	p, err := h.service.PublishPost(r.Context(), newsletterID, postID)
+	if err != nil {
+		http.Error(w, `{"error": "failed to publish post"}`, http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(p)
 }

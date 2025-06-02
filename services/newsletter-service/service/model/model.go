@@ -45,3 +45,9 @@ type Post struct {
 	Published    bool          `json:"published"`
 	CreatedAt    time.Time     `json:"created_at"` // ISO 8601 format
 }
+
+type PostToPublish struct {
+	NewsletterID string `json:"newsletter_id"`
+	Title        string `json:"title"`
+	Content      string `json:"content"`
+}
