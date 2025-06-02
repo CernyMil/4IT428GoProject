@@ -1,45 +1,27 @@
 package query
 
-const (
-	// Query to read a user by ID
-	ReadUser = `
-        SELECT id, email, first_name, last_name, created_at
-        FROM users
-        WHERE id = :id
-    `
+import (
+	_ "embed"
+)
 
-	// Query to list all users
-	ListUser = `
-        SELECT id, email, first_name, last_name, created_at
-        FROM users
-        ORDER BY created_at DESC
-    `
+var (
+	// Embed SQL files
 
-	// Query to read a newsletter by ID
-	ReadNewsletter = `
-        SELECT id, subject, body, created_at
-        FROM newsletters
-        WHERE id = $1
-    `
+	//go:embed scripts/ReadUser.sql
+	ReadUser string
 
-	// Query to list all newsletters
-	ListNewsletters = `
-        SELECT id, subject, body, created_at
-        FROM newsletters
-        ORDER BY created_at DESC
-    `
+	//go:embed scripts/ReadNewsletter.sql
+	ListUser string
 
-	// Query to insert a new newsletter
-	InsertNewsletter = `
-        INSERT INTO newsletters (id, subject, body, created_at)
-        VALUES ($1, $2, $3, $4)
-    `
+	//go:embed scripts/ReadNewsletter.sql
+	ReadNewsletter string
 
-	// Query to update a newsletter
-	UpdateNewsletter = `
-        UPDATE newsletters
-        SET subject = $1, body = $2
-        WHERE id = $3
-        RETURNING id, subject, body, created_at
-    `
+	//go:embed scripts/ListNewsletters.sql
+	ListNewsletters string
+
+	//go:embed scripts/InsertNewsletter.sql
+	InsertNewsletter string
+
+	//go:embed scripts/UpdateNewsletter.sql
+	UpdateNewsletter string
 )
