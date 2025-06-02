@@ -1,0 +1,168 @@
+openapi: 3.0.3
+info:
+  title: Newsletter Service
+  description: Service for managing newsletters and posts.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8082
+    description: Localhost server running on HTTP.
+
+paths:
+  "/ping":
+    get:
+      description: Health check
+      operationId: Ping
+      summary: Check the healthiness of the service
+      responses:
+        "204":
+          description: Service is up and running
+        "400":
+          description: Invalid request
+
+  "/newsletters":
+    get:
+      summary: Get all newsletters
+      description: Retrieve a list of all newsletters.
+      operationId: GetNewsletters
+      responses:
+        "200":
+          description: List of newsletters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Newsletter"
+        "500":
+          description: Internal server error
+
+    post:
+      summary: Create a new newsletter
+      description: Create a new newsletter with the provided details.
+      operationId: CreateNewsletter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateNewsletterInput"
+      responses:
+        "201":
+          description: Newsletter created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Newsletter"
+        "400":
+          description: Invalid input
+        "500":
+          description: Internal server error
+
+  "/newsletters/{id}":
+    get:
+      summary: Get a specific newsletter
+      description: Retrieve a newsletter by its ID.
+      operationId: GetNewsletterById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Newsletter details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Newsletter"
+        "404":
+          description: Newsletter not found
+        "500":
+          description: Internal server error
+
+    put:
+      summary: Update a newsletter
+      description: Update the details of an existing newsletter.
+      operationId: UpdateNewsletter
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateNewsletterInput"
+      responses:
+        "200":
+          description: Newsletter updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Newsletter"
+        "400":
+          description: Invalid input
+        "404":
+          description: Newsletter not found
+        "500":
+          description: Internal server error
+
+    delete:
+      summary: Delete a newsletter
+      description: Delete a newsletter by its ID.
+      operationId: DeleteNewsletter
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Newsletter deleted successfully
+        "404":
+          description: Newsletter not found
+        "500":
+          description: Internal server error
+
+components:
+  schemas:
+    Newsletter:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    CreateNewsletterInput:
+      type: object
+      required:
+        - title
+        - description
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+
+    UpdateNewsletterInput:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
