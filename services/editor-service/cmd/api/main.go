@@ -12,6 +12,7 @@ import (
 	"os"
 
 	"github.com/go-chi/chi/v5"
+	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -34,7 +35,9 @@ func main() {
 	handler := v1.NewEditorHandler(svc)
 	controller := api.NewController(handler)
 	r := chi.NewRouter()
-	//r.Use(middleware.Logger)
+
+	r.Use(chiMiddleware.Logger)
+	r.Use(chiMiddleware.Recoverer)
 
 	r.Post("/signup", controller.SignUp)
 	r.Post("/signin", controller.SignIn)

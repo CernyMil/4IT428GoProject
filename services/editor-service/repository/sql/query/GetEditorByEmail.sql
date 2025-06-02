@@ -1,1 +1,0 @@
-SELECT id, email, first_name, last_name, created_at FROM editors WHERE email=@email;

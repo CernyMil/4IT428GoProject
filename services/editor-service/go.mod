@@ -4,7 +4,7 @@ go 1.24.0
 
 require (
 	firebase.google.com/go v3.13.0+incompatible
-	github.com/go-chi/chi/v5 v5.0.8
+	github.com/go-chi/chi/v5 v5.2.1
 	github.com/jackc/pgx/v5 v5.7.5
 	google.golang.org/api v0.234.0
 )
