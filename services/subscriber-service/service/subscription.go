@@ -41,8 +41,8 @@ func (s Service) SubscribeToNewsletter(ctx context.Context, subReq svcmodel.Subs
 		return fmt.Errorf("failed to get newsletters: %w", err)
 	}
 	found := false
-	for _, n := range newsletters {
-		if n.NewsletterID == subReq.NewsletterID.String() {
+	for _, news := range newsletters {
+		if news.ID == subReq.NewsletterID.String() {
 			found = true
 			break
 		}
